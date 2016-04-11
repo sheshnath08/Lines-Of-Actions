@@ -31,10 +31,12 @@ public class LineOfAction extends JFrame{
     Piece redPiece[] = new RoundPiece[6];
     Piece blackPiece[] = new RoundPiece[6];
     Piece highlight = new RoundPiece(Color.cyan);
+    int state[][];
 
-    static boolean turn  = true;
+    static boolean humanPlayerTurn = true;
     Player white;
     Player black;
+    int clickCount;
     
     public static void main(String[] args) {
         LineOfAction test = new LineOfAction();
@@ -103,6 +105,13 @@ public class LineOfAction extends JFrame{
      */
     private void placePiecesOnBoard() {
         // Create and place some pieces
+        state = new int[][]{
+                {0,1,1,1,0},
+                {-1,0,0,0,-1},
+                {-1,0,0,0,-1},
+                {-1,0,0,0,-1},
+                {0,1,1,1,0}
+        };
         for(int i = 0;i<6;i++){
             redPiece[i] = new RoundPiece();
             blackPiece[i] = new RoundPiece(Color.black);
@@ -124,11 +133,16 @@ public class LineOfAction extends JFrame{
         board.place(blackPiece[5], 4, 3);
 
         white = new Player(false,redPiece);
-        white.addPieces(redPiece);
         black = new Player(true,blackPiece);
+        white.addPieces(redPiece);
         black.addPieces(blackPiece);
+/*
+        white = new Player(true,blackPiece);
+        black = new Player(false,redPiece);
+        white.addPieces(blackPiece);
+        black.addPieces(redPiece);
 
-
+*/
         play();
 
     }
@@ -137,41 +151,67 @@ public class LineOfAction extends JFrame{
 
         display.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                int clickCount = 0;
+                //clickCount = 0;
                 if(clickCount == 0){
                     selectedRow = board.getSelectedRow();
                     selectedColumn = board.getSelectedColumn();
-                    clickCount++;
+                    if(white.hasPiece(board.getPiece(selectedRow,selectedColumn))){
+                        clickCount++;
+                        //call method to show valid position
+                        showValidMoves(selectedRow,selectedColumn);
+                        board.setSelectedSquare(selectedRow,selectedColumn);
+                    }
                 }
                 else{
                     newRow = board.getSelectedRow();
                     newColumn = board.getSelectedColumn();
-                    clickCount++;
+                    //check if new selected location is valid
+                    if(board.isEmpty(newRow,newColumn)){
+                        clickCount++;
+                    }
+                    else // either selecting to capture black key or selecting new key for move
+                    {
+                        if(white.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
+                        {
+                            clickCount = 1;
+                            board.setSelectedSquare(newRow,newColumn);
+                            selectedRow = newRow;
+                            selectedColumn = newColumn;
+                        }
+                        else // trying to capture black key
+                        {
+
+                        }
+                    }
 
                 }
-                if(turn) // if Human Players turn
+                if(humanPlayerTurn) // if Human Players humanPlayerTurn
                {
-                   clickCount ++;
-                   if(white.hasPiece(board.getPiece(selectedRow,selectedColumn))){
-                       board.setSelectedPiece(board.getPiece(selectedRow,selectedColumn));
-                       if(board.isEmpty(newRow,newColumn) && clickCount == 2){
+                   if(white.hasPiece(board.getPiece(selectedRow,selectedColumn)) && clickCount == 2){
+                       if(board.isEmpty(newRow,newColumn)){
                            board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
+                           state[newRow][newColumn] = -1;
+                           state[selectedRow][selectedColumn] = 0;
+                           //humanPlayerTurn = false;
                            clickCount = 0;
+                           //playAI(); // called for AI's Move
                        }
                    }
-
-                // showValidMoves(selectedRow,selectedColumn);
                }
-                else // AI's Turn
-               {
 
-               }
             }
         });
     }
 
-    private void showValidMoves(int selectedRow, int selectedColumn) {
+    private void playAI() {
+        board.getPiece(0,1).moveTo(2,4);
+        humanPlayerTurn = true;
+        clickCount = 0;
+    }
 
+    private void showValidMoves(int selectedRow, int selectedColumn) {
+        int colSum=0;
+        int rowSum=0;
     }
 
 

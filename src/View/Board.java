@@ -14,14 +14,7 @@ import java.util.Stack;
 import java.util.Vector;
 import javax.swing.JPanel;
 
-// NO KNOWN BUGS! February 6, 2004 at 9:30 PM
-// Now trying to get selected square and selected piece to work properly...
 
-/**
- * A generic board that, together with Piece, can be used to display board
- * games. This class is only for display purposes; logic for the game should be
- * in user-defined classes.
- */
 public class Board extends Observable implements Observer {
     private Vector[][] board;
     private Vector allPieces = new Vector();
@@ -36,14 +29,7 @@ public class Board extends Observable implements Observer {
     protected boolean panelHasBeenResized = false;
 
     /**
-     * Creates a playing board with the given number of rows and columns. This
-     * board is a Swing <code>JPanel</code> and may be used wherever a
-     * <code>JPanel</code> may be used.
-     * 
-     * @param rows
-     *        Desired number of rows.
-     * @param columns
-     *        Desired number of columns.
+     * Creates a playing board with the given number of rows and columns.
      */
     public Board(int rows, int columns) {
         display = new DisplayPanel();
@@ -75,8 +61,6 @@ public class Board extends Observable implements Observer {
     
     /**
      * Returns the JPanel on which this board is displayed.
-     * 
-     * @return The JPanel on which this Board is displayed.
      */
     public JPanel getJPanel() {
         return display;
@@ -84,8 +68,6 @@ public class Board extends Observable implements Observer {
 
     /**
      * Returns the number of rows in this Board.
-     * 
-     * @return The number of rows.
      */
     public int getRows() {
         return rows;
@@ -93,8 +75,6 @@ public class Board extends Observable implements Observer {
 
     /**
      * Returns the number of columns in this Board.
-     * 
-     * @return The number of columns.
      */
     public int getColumns() {
         return columns;

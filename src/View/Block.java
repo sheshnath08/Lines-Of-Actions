@@ -22,7 +22,7 @@ public class Block extends Piece {
      * @param g The graphics on which to draw.
      */
     public void paint(Graphics g, Rectangle r) {
-        g.setColor(Color.black);
+        g.setColor(Color.cyan);
         g.fillRect(r.x, r.y, r.width, r.height);
     }
 }
