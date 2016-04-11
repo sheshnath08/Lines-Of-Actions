@@ -5,8 +5,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * Example playing piece. This class is only here as an example,
- * and may be discarded.
+ * Created by sheshnath on 4/10/2016.
  */
 public class RoundPiece extends Piece {
     

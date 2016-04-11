@@ -8,12 +8,6 @@ import java.awt.event.MouseMotionListener;
 import java.util.Observable;
 
 
-// Version Feb.4, 10:20 PM
-/**
- * An abstract class that represents a playing piece. This class, together with
- * Board, can be used to display board games. This class is only for display
- * purposes; logic for the game should be in user-defined classes.
- */
 public abstract class Piece extends Observable {
     protected Board board;
     private int row = -1;
@@ -30,11 +24,9 @@ public abstract class Piece extends Observable {
     private static final int FRAME_RATE = 1000 / PAUSE_MS;
 
     /**
-     * Creates a Piece. The piece is not actually placed on any
-     * board; for that, see the methods
-     * <code>board.place(piece, row, column)</code> and
-     * <code>piece.place(board, row, column)</code>.
+     * Created by sheshnath on 4/10/2016.
      */
+
     public Piece() {
     }
 

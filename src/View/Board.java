@@ -14,6 +14,10 @@ import java.util.Stack;
 import java.util.Vector;
 import javax.swing.JPanel;
 
+/**
+ * Created by sheshnath on 4/10/2016.
+ */
+
 
 public class Board extends Observable implements Observer {
     private Vector[][] board;

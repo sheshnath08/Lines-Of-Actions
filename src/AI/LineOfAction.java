@@ -13,8 +13,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
- * Start class class for the board game API.
+ *
+ * Created by sheshnath on 4/10/2016.
  */
+
 public class LineOfAction extends JFrame{
     Board board;
     JPanel buttonPanel;
