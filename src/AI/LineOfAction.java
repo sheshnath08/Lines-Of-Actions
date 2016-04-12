@@ -1,9 +1,6 @@
 package AI;
 
-import View.Board;
-import View.Piece;
-import View.Player;
-import View.RoundPiece;
+import View.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,6 +8,7 @@ import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 
 /**
  *
@@ -191,12 +189,18 @@ public class LineOfAction extends JFrame{
                {
                    if(white.hasPiece(board.getPiece(selectedRow,selectedColumn)) && clickCount == 2){
                        if(board.isEmpty(newRow,newColumn)){
-                           board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
-                           state[newRow][newColumn] = -1;
-                           state[selectedRow][selectedColumn] = 0;
-                           //humanPlayerTurn = false;
-                           clickCount = 0;
-                           //playAI(); // called for AI's Move
+                           if(board.getPiece(selectedRow,selectedColumn).canMoveTo(newRow,newColumn)){
+                               board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
+                               state[newRow][newColumn] = -1;
+                               state[selectedRow][selectedColumn] = 0;
+                               //humanPlayerTurn = false;
+                               clickCount = 0;
+                               //playAI(); // called for AI's Move
+                           }
+                           else{
+                               clickCount = 1;
+                           }
+
                        }
                    }
                }
@@ -214,7 +218,47 @@ public class LineOfAction extends JFrame{
     private void showValidMoves(int selectedRow, int selectedColumn) {
         int colSum=0;
         int rowSum=0;
+        for(int i = 0 ;i<board.getRows();i++){
+            rowSum = rowSum+ Math.abs(state[selectedRow][i]);
+            colSum = colSum + Math.abs(state[i][selectedColumn]);
+        }
+        HighlightBlock hb = new HighlightBlock();
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(rowSum,colSum)){
+            //board.place(hb,selectedRow,rowSum+selectedColumn);
+        }
     }
 
+    private boolean isValidMove(int row,int column){
+        int colSum=0;
+        int rowSum=0;
+        for(int i = 0 ;i<board.getRows();i++){
+            rowSum = rowSum+ Math.abs(state[selectedRow][i]);
+            colSum = colSum + Math.abs(state[i][selectedColumn]);
+        }
+        if(row == selectedRow)//moving in same row
+        {
+            if(selectedColumn == column-colSum){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(column == selectedColumn)// moving in same column
+        {
+            if(selectedRow == row-rowSum){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else // moving in diagonal
+        {
+
+        }
+
+        return false;
+    }
 
 }

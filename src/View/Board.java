@@ -366,6 +366,7 @@ public class Board extends Observable implements Observer {
      * @return <code>true</code> if the given row and column number represent
      *         a valid location on this board
      */
+
     public boolean isLegalPosition(int row, int column) {
         if (row < 0 || row >= rows)
             return false;
@@ -374,15 +375,7 @@ public class Board extends Observable implements Observer {
         return true;
     }
     
-    /**
-     * Redraws this Board whenever a Piece is modified.
-     * This method should <b>not</b> be overridden.
-     * 
-     * @param piece
-     *        The piece that needs to be redrawn.
-     * @param nothing
-     *        Not used.
-     */
+
     public void update(Observable changedPiece, Object rectangle) {
         Piece piece = (Piece)changedPiece;
         if (rectangle == null) {

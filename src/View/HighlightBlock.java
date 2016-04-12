@@ -7,16 +7,16 @@ import java.awt.Rectangle;
 /**
  * Created by sheshnath on 4/10/2016.
  */
-public class Block extends Piece {
+public class HighlightBlock extends Piece {
     
     /**
-     * Constructs a <code>Block</code>.
+     * Constructs a <code>HighlightBlock</code>.
      **/
-     Block() {
+     public HighlightBlock() {
     }
     
     /**
-     * Draws this <code>Block</code> on the given <code>Graphics</code>.
+     * Draws this <code>HighlightBlock</code> on the given <code>Graphics</code>.
      * 
      * @param g The graphics on which to draw.
      */

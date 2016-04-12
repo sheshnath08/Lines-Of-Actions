@@ -5,8 +5,10 @@ package AI;
  */
 public class AIFunctions {
     // add function to find next best move
-    int showValidMove(int state[][],int row, int column){
+    int[] nexBestMove(int state[][]){
+        int move[] = new int[2];
 
-        return 1;
+        return move;
     }
+
 }
