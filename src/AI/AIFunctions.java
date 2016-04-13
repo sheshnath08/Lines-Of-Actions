@@ -10,5 +10,7 @@ public class AIFunctions {
 
         return move;
     }
+    //TODO: implement alphabeta method
 
+    //TODO: implement method to find all the actions
 }

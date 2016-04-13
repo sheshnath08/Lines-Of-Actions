@@ -158,28 +158,13 @@ public class Board extends Observable implements Observer {
         return getPiece(yToRow(y), xToColumn(x));
     }
 
-//    /**
-//     * Sets the currently selected piece to the given piece (may be null).
-//     * 
-//     * @param piece
-//     *        The piece to be selected (which must be selectable), or null if no
-//     *        piece is to be selected.
-//     */
-//    protected void setSelectedPiece(Piece piece) {
-//        if (piece != null && !piece.isSelectable() {
-//            return;
-//        }
-//        selectedPiece = piece;
-//    }
-//
-//    /**
-//     * Returns the currently selected piece (may be null).
-//     * 
-//     * @return The currently selected piece.
-//     */
-//    protected Piece getSelectedPiece() {
-//        return selectedPiece;
-//    }
+    /**
+     * Sets the currently selected piece to the given piece (may be null).
+   *
+    * @param piece
+    *        The piece to be selected (which must be selectable), or null if no
+    *        piece is to be selected.
+    */
 
     /**
      * Given an x coordinate, determines which column it is in.

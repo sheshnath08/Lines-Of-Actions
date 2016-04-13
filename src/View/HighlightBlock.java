@@ -22,6 +22,6 @@ public class HighlightBlock extends Piece {
      */
     public void paint(Graphics g, Rectangle r) {
         g.setColor(Color.cyan);
-        g.fillRect(r.x, r.y, r.width, r.height);
+        g.fillRect(r.x, r.y, r.width/2, r.height/2);
     }
 }

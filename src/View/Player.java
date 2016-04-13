@@ -8,15 +8,15 @@ import java.util.Vector;
 public class Player {
     boolean black;
     int key; // number of key a player currently has
-    Vector<Piece> checkers;
-    public Player(boolean black, Piece checkers[]){
+    Vector<Piece> pieceVector;
+    public Player(boolean black, Piece pieceVector[]){
         this.black = black;
-        this.checkers = new Vector(checkers.length);
-        key = checkers.length;
+        this.pieceVector = new Vector(pieceVector.length);
+        key = pieceVector.length;
     }
     public void addPieces(Piece c[]){
         for(int i=0;i<key;i++){
-            checkers.addElement(c[i]);
+            pieceVector.addElement(c[i]);
         }
     }
     private void setKey(int key){
@@ -26,7 +26,7 @@ public class Player {
         return key;
     }
     public boolean hasPiece(Piece piece){
-        if(checkers.contains(piece)){
+        if(pieceVector.contains(piece)){
             return true;
         }
         else{
