@@ -14,6 +14,7 @@ public class Player {
         this.pieceVector = new Vector(pieceVector.length);
         key = pieceVector.length;
     }
+    //adding piece to player while initializing board
     public void addPieces(Piece c[]){
         for(int i=0;i<key;i++){
             pieceVector.addElement(c[i]);
@@ -34,6 +35,7 @@ public class Player {
         }
     }
 
+    //remove piece when other player captures the piece
     public boolean removePiece(Piece piece){
         return pieceVector.remove(piece);
     }

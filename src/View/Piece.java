@@ -2,9 +2,7 @@ package View;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 import java.util.Observable;
 
 
@@ -12,22 +10,21 @@ public abstract class Piece extends Observable {
     protected Board board;
     private int row = -1;
     private int column = -1;
-    private boolean moving = false;
-    private boolean draggable = false;
-    private static int draggableCount = 0;
     private boolean selectable = true;
-    private static MouseDragger listener;
     private int x;
     private int y;
     private int speed = -1; // Negative means to use Board default
     private static final int PAUSE_MS = 50;
     private static final int FRAME_RATE = 1000 / PAUSE_MS;
+    private static int state[][];
+    public ArrayList<int[]> action = new ArrayList<int[]>();
 
     /**
      * Created by sheshnath on 4/10/2016.
      */
 
     public Piece() {
+
     }
 
     /**
@@ -46,68 +43,14 @@ public abstract class Piece extends Observable {
         return getClass().getName() + "[" + row + "][" + column + "]";
     }
 
-    /**
-     * Determines whether the piece can be dragged by the mouse.
-     * 
-     * @param draggable
-     *        Tell whether the piece can be dragged by user mouse
-     *        movement.
-     */
-    public void setDraggable(boolean draggable) {
-        if (this.draggable == draggable) return;
-        this.draggable = draggable;
-        if (board != null) {
-            if (draggable) {
-                addDragListener();
-            } else {
-                removeDragListener();
-            }
-        }
-    }
-
-    /**
-     * Makes it possible for the user to drag this piece.
-     * The instance variable <code>board</code> must be non-null.
-     */
-    private void addDragListener() {
-        draggableCount++;
-        if (listener == null) {
-            listener = new MouseDragger(board);
-            if (draggableCount == 1) {
-                board.getJPanel().addMouseListener(listener);
-                board.getJPanel().addMouseMotionListener(listener);
-            }
-        }
-    }
-
-    /**
-     * Prevents the user from dragging this piece.
-     * The instance variable <code>board</code> must be non-null.
-     */
-    private void removeDragListener() {
-        draggableCount--;
-        if (draggableCount == 0) {
-            board.getJPanel().removeMouseListener(listener);
-            board.getJPanel().removeMouseMotionListener(listener);
-        }
-    }
-
-    /**
-     * Returns <code>true</code> if the piece can be dragged by the mouse.
-     * 
-     * @return <code>true</code> if the piece is draggable.
-     */
-    public boolean isDraggable() {
-        return draggable;
+    public ArrayList<int[]> getAction(){
+        return action;
     }
 
     /**
      * Determines whether the piece can be selected by the mouse.
      * 
-     * @param selectable
-     *        Set to true if and only if the piece can be selected by clicking
-     *        on it.
-     */
+    */
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
     }
@@ -127,10 +70,7 @@ public abstract class Piece extends Observable {
      * @return The x-coordinate.
      */
     protected int getX() {
-        if (moving)
-            return x;
-        else
-            return board.columnToX(column);
+        return board.columnToX(column);
     }
 
     /**
@@ -139,10 +79,7 @@ public abstract class Piece extends Observable {
      * @return The y-coordinate.
      */
     protected int getY() {
-        if (moving)
-            return y;
-        else
-            return board.rowToY(row);
+        return board.rowToY(row);
     }
 
     /**
@@ -155,13 +92,9 @@ public abstract class Piece extends Observable {
         int y = getY() + 1;
         int width;
         int height;
-        if (moving) {
-            width = board.getCellWidth() - 1;
-            height = board.getCellHeight() - 1;
-        } else {
-            width = board.columnToX(column + 1) - x;
-            height = board.rowToY(row + 1) - y;
-        }
+        width = board.columnToX(column + 1) - x;
+        height = board.rowToY(row + 1) - y;
+
         return new Rectangle(x, y, width, height);
     }
 
@@ -197,9 +130,6 @@ public abstract class Piece extends Observable {
         this.column = column;
         x = board.columnToX(column);
         y = board.rowToY(row);
-        if (draggable) {
-            addDragListener();
-        }
         addObserver(board);
         redraw(getRectangle());
     }
@@ -216,9 +146,6 @@ public abstract class Piece extends Observable {
     
     /** For internal use only! */
     protected void removeHelper() {
-        if (draggable) {
-            removeDragListener();
-        }
         redraw();
         board = null;
         row = column = -1;
@@ -310,8 +237,6 @@ public abstract class Piece extends Observable {
     public boolean moveTo(int newRow, int newColumn) {
         if (!board.isLegalPosition(newRow, newColumn))
             return false;
-        if (moving)
-            return false;
         int startX = board.columnToX(column);
         int startY = board.rowToY(row);
         int finishX = board.columnToX(newColumn);
@@ -320,7 +245,7 @@ public abstract class Piece extends Observable {
         int changeInY = finishY - startY;
         Rectangle oldRect = getRectangle();
         Rectangle newRect = new Rectangle(oldRect);
-        
+
         // compensate for squares being slightly different sizes
         oldRect.width += 2;
         newRect.width += 2;
@@ -328,14 +253,13 @@ public abstract class Piece extends Observable {
         newRect.height += 2;
 
         // Move smoothly towards new position
-        moving = true;
         board.moveToTop(this);
         int deltaRow = Math.abs(row - newRow);
         int deltaColumn = Math.abs(column - newColumn);
         int distance = Math.max(deltaRow, deltaColumn)
                 - Math.min(deltaRow, deltaColumn) / 2;
         int numberOfSteps = distance * FRAME_RATE / getSpeed();
-        
+
         for (int i = 1; i <= numberOfSteps; i++) {
             oldRect.x = x;
             oldRect.y = y;
@@ -345,7 +269,7 @@ public abstract class Piece extends Observable {
             newRect.y = y;
             redraw(oldRect.union(newRect));
         }
-        moving = false;
+
         if (canMoveTo(newRow, newColumn)) {
             changePosition(newRow, newColumn);
         }
@@ -368,10 +292,6 @@ public abstract class Piece extends Observable {
     }
     
     /**
-     * Determines whether this piece can be moved to the specified
-     * location.  This method returns <code>true</code> if this
-     * piece is on a board and the location is legal for that board.
-     * This method can be overridden with more specific tests.
      */
     public boolean canMoveTo(int newRow, int newColumn) {
         if (board == null) return false;
@@ -380,11 +300,7 @@ public abstract class Piece extends Observable {
 
     /**
      * Change the position of this piece on the board.
-     * 
-     * @param newRow
-     *        The new row for this piece.
-     * @param newColumn
-     *        The new column for this piece.
+     *
      */
     private void changePosition(int newRow, int newColumn) {
         if (!atLegalPosition())
@@ -418,106 +334,7 @@ public abstract class Piece extends Observable {
         catch (InterruptedException e) {}
     }
 
-    private class MouseDragger extends MouseAdapter implements
-            MouseMotionListener {
-        private Piece pieceBeingDragged = null;
-        private Board board;
 
-        private MouseDragger(Board board) {
-            this.board = board;
-        }
-
-        /**
-         * When the mouse button is pressed over a draggable piece,
-         * begins the dragging process. Only one piece can be dragged
-         * at a time.
-         * 
-         * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-         */
-        public void mousePressed(MouseEvent e) {
-            board.setSelectedSquare(board.yToRow(e.getY()), board.xToColumn(e.getX()));
-//System.out.println("Selection: " + board.getSelectedRow() + " " + board.getSelectedColumn());
-            Piece chosenPiece = board.findPiece(e.getX(), e.getY());
-            if (chosenPiece == null){
-                return;
-            }
-            if (chosenPiece.isSelectable()) {
-                board.setSelectedPiece(chosenPiece);
-            }
-            if (pieceBeingDragged != null) {
-                return; // can only drag one piece at a time
-            }
-            if (!chosenPiece.draggable) {
-                return;
-            }
-            pieceBeingDragged = chosenPiece;
-            board = pieceBeingDragged.board;
-            pieceBeingDragged.moving = true;
-            board.moveToTop(pieceBeingDragged);
-        }
-
-        /**
-         * Continues dragging a piece.
-         * 
-         * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-         */
-        public void mouseDragged(MouseEvent e) {
-            int x;
-            int y;
-            
-            if (pieceBeingDragged == null)
-                return;
-            // Don't allow drag outside board boundaries
-            int maxX = board.columnToX(board.getColumns() - 1);
-            int maxY = board.rowToY(board.getRows() - 1);
-            x = e.getX() - board.getCellWidth() / 2;
-            if (x < 0) {
-                x = 0;
-            } else {
-                if (x > maxX)
-                    x = maxX;
-            }
-            y = e.getY() - board.getCellHeight() / 2;
-            if (y < 0) {
-                y = 0;
-            } else {
-                if (y > maxY)
-                    y = maxY;
-            }
-            pieceBeingDragged.x = x;
-            pieceBeingDragged.y = y;
-            // Track mouse movement
-            setChanged();
-            notifyObservers();
-
-        }
-
-        /**
-         * Terminates the drag process, putting the dragged piece in the
-         * nearest square.
-         * 
-         * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-         */
-        public void mouseReleased(MouseEvent e) {
-            if (pieceBeingDragged == null) return;
-            Rectangle oldRect = pieceBeingDragged.getRectangle();
-            Rectangle newRect = oldRect;
-            int newRow = board.yToRow(pieceBeingDragged.y
-                    + board.getCellHeight() / 2);
-            int newColumn = board.xToColumn(pieceBeingDragged.x
-                    + board.getCellWidth() / 2);
-
-            if (canMoveTo(newRow, newColumn)) {
-                pieceBeingDragged.changePosition(newRow, newColumn);
-            }
-            pieceBeingDragged.moving = false;
-            newRect = pieceBeingDragged.getRectangle();
-            pieceBeingDragged = null;
-            redraw(enlarge(oldRect.union(newRect)));
-        }
-
-        public void mouseMoved(MouseEvent e) {}
-    }
 
     private Rectangle enlarge(Rectangle r) {
         r.x -= 2;
@@ -527,14 +344,99 @@ public abstract class Piece extends Observable {
         return r;
     }
 
-    // ------------------------------ Debugging methods
-
-    /**
-     * Debugging method to print out the status of this Piece.
-     */
-    public void dump() {
-        System.out.println(" x = " + x + ", y = " + y);
-        System.out.println("    draggable = " + draggable + ", selectable = " +
-                           selectable + ", moving = " + moving);
+    public void updateAction(){
+        int rowSum = board.rowSum(row,column);
+        int colSum = board.colSum(row,column);
+        int dg1Sum = board.dg1Sum(row,column);
+        int dg2Sum = board.dg2Sum(row,column);
+        int move[] = new int[2]; // to store action's row,column
+        //moving up
+        if(board.isValidMove(row,column,row+colSum,column)){
+            move[0] = row+colSum;
+            move[1] = column;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //down
+        if(board.isValidMove(row,column,row-colSum,column)){
+            move[0] = row-colSum;
+            move[1] = column;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving right
+        if(board.isValidMove(row,column,row,column+rowSum)){
+            move[0] = row;
+            move[1] = column+rowSum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        // moving left
+        if(board.isValidMove(row,column,row,column-rowSum)){
+            move[0] = row;
+            move[1] = column-rowSum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving right up
+        if(board.isValidMove(row,column,row+dg1Sum,column+dg1Sum)){
+            move[0] = row+dg1Sum;
+            move[1] = column+dg1Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //left down
+        if(board.isValidMove(row,column,row-dg1Sum,column-dg1Sum)){
+            move[0] = row-dg1Sum;
+            move[1] = column-dg1Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving left up
+        if(board.isValidMove(row,column,row-dg2Sum,column+dg2Sum)){
+            move[0] = row-dg2Sum;
+            move[1] = column+dg2Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        // moving left
+        if(board.isValidMove(row,column,row+dg2Sum,column-dg2Sum)){
+            move[0] = row+dg2Sum;
+            move[1] = column-dg2Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
     }
+
 }

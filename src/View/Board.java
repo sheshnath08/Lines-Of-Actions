@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 
 public class Board extends Observable implements Observer {
     private Vector[][] board;
+    public int state[][];
     private Vector allPieces = new Vector();
     private int selectedRow = -1;
     private int selectedColumn = -1;
@@ -31,6 +32,10 @@ public class Board extends Observable implements Observer {
     private Board thisBoard;
     private JPanel display;
     protected boolean panelHasBeenResized = false;
+
+    public Piece redPiece[] = new RoundPiece[6];
+    public Piece blackPiece[] = new RoundPiece[6];
+    public Piece highlight[];
 
     /**
      * Creates a playing board with the given number of rows and columns.
@@ -110,7 +115,7 @@ public class Board extends Observable implements Observer {
      * Returns a (possibly empty) Stack of all the pieces in the given position.
      * The top element of the stack is the topmost element in that board
      * location.
-     * 
+     *
      * @param row
      *        A row number on this board.
      * @param column
@@ -142,7 +147,7 @@ public class Board extends Observable implements Observer {
     /**
      * Given x-y coordinates, finds and returns the topmost piece at that
      * location on this board, or null if there is no such piece.
-     * 
+     *
      * @param x
      *        The local x coordinate.
      * @param y
@@ -266,6 +271,107 @@ public class Board extends Observable implements Observer {
         board[newRow][newColumn].add(piece);
     }
 
+
+    /*
+    Methods to find row-sum, col-sum and diagonal sum
+     */
+
+    public int rowSum(int selectedRow, int selectedColumn){
+
+        int rowSum=0;
+        for(int i = 0 ;i<rows;i++){
+            rowSum = rowSum+ Math.abs(state[selectedRow][i]);
+        }
+        return rowSum;
+    }
+
+    public int colSum(int selectedRow,int selectedColumn){
+        int colSum=0;
+        for(int i = 0 ;i<rows;i++){
+            colSum = colSum+ Math.abs(state[i][selectedColumn]);
+        }
+        return colSum;
+    }
+
+    public int dg1Sum(int selectedRow,int selectedColumn){
+        int dg1Sum = 0;
+        dg1Sum = dg1Sum + Math.abs(state[selectedRow][selectedColumn]);
+        for(int i=1;i<getRows();i++){
+            if(selectedRow-i>=0 && selectedColumn - i >= 0) {
+                dg1Sum = dg1Sum + Math.abs(state[selectedRow - i][selectedColumn - i]);
+            }
+            if(selectedRow+i<getRows() && selectedColumn +i < getRows()) {
+                dg1Sum = dg1Sum + Math.abs(state[selectedRow + i][selectedColumn +i]);
+            }
+        }
+        return dg1Sum;
+    }
+
+    public int dg2Sum(int selectedRow,int selectedColumn){
+        int dg2Sum = 0;
+        dg2Sum = dg2Sum + Math.abs(state[selectedRow][selectedColumn]);
+        for(int i=1;i<rows;i++){
+            if(selectedRow-i>=0 && selectedColumn +i < getRows()) {
+                dg2Sum = dg2Sum + Math.abs(state[selectedRow - i][selectedColumn + i]);
+            }
+
+            if(selectedRow+i<getRows() && selectedColumn - i >= 0) {
+                dg2Sum = dg2Sum + Math.abs(state[selectedRow + i][selectedColumn -i]);
+            }
+        }
+        return dg2Sum;
+    }
+
+    public boolean isValidMove(int selectedRow, int selectedColumn, int row,int column){
+        int colSum= colSum(selectedRow,selectedColumn);
+        int rowSum= rowSum(selectedRow,selectedColumn);
+        int dg1Sum = dg1Sum(selectedRow,selectedColumn);
+        int dg2Sum = dg2Sum(selectedRow,selectedColumn);
+
+        if(row == selectedRow)//moving in same row
+        {
+            if(column == selectedColumn+rowSum || column == Math.abs(selectedColumn - rowSum)){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(column == selectedColumn)// moving in same column
+        {
+            if(row == selectedRow+colSum || row == Math.abs(selectedRow - colSum)){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else // moving in diagonal
+        {
+            if(((row == selectedRow + dg1Sum) && (column == selectedColumn + dg1Sum))
+                    || ((row == selectedRow - dg1Sum) && (column == selectedColumn - dg1Sum))){
+                return true;
+            }
+
+            if(((row == selectedRow + dg2Sum) && (column == selectedColumn - dg2Sum))
+                    || ((row == selectedRow - dg2Sum) && (column == selectedColumn +dg2Sum))){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    // function to update action of piece after every move
+    public void updatePiecesActions(){
+        for(int i=0;i<redPiece.length;i++){
+            redPiece[i].updateAction();
+        }
+        for(int i=0;i<blackPiece.length;i++){
+            blackPiece[i].updateAction();
+        }
+    }
     /**
      * Removes this piece from the board. Does nothing if the piece
      * is not, in fact, on the board.
@@ -304,7 +410,7 @@ public class Board extends Observable implements Observer {
      * Sets the default speed of movement for pieces on this board, in squares
      * per second. This value is used only for pieces that do not specify their
      * own speed.
-     * 
+     *
      * @param speed
      *        The default speed for pieces on this board.
      */
@@ -316,7 +422,7 @@ public class Board extends Observable implements Observer {
     /**
      * Returns the default speed (in squares per second) of pieces on this
      * board.
-     * 
+     *
      * @return The default speed for pieces on this board.
      */
     public int getSpeed() {
@@ -439,7 +545,6 @@ public class Board extends Observable implements Observer {
             for (Iterator iter = allPieces.iterator(); iter.hasNext();) {
                 Piece piece = (Piece) iter.next();
                 System.out.print(piece.toString());
-                piece.dump();
             }
         }
     }
