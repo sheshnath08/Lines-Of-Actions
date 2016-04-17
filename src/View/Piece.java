@@ -175,44 +175,22 @@ public abstract class Piece extends Observable {
         return row;
     }
 
-    /**
-     * Returns the column that this piece is in, or -1 if this piece is not on
-     * the board.
-     * 
-     * @return The column number.
-     */
+
     public int getColumn() {
         return column;
     }
 
-    /**
-     * Returns true if this piece is legally placed on the board.
-     * 
-     * @return True if this piece is at a legal position.
-     */
+
     protected boolean atLegalPosition() {
         return board.isLegalPosition(row, column);
     }
 
-    /**
-     * Places this piece at the given row and column on the board.
-     * @param board 
-     *        The Board on which to place this piece.
-     * @param row
-     *        The row in which to place this piece.
-     * @param column
-     *        The column in which to place this piece.
-     */
+
     public void place(Board board, int row, int column) {
         board.place(this, row, column);
     }
     
-    /** For internal use only! 
-     * 
-     * @param board The Board on which to place this piece.
-     * @param row The row number.
-     * @param column The column number.
-     */
+
     protected void placeHelper(Board board, int row, int column) {
         this.board = board;
         this.row = row;
@@ -394,10 +372,6 @@ public abstract class Piece extends Observable {
      * location.  This method returns <code>true</code> if this
      * piece is on a board and the location is legal for that board.
      * This method can be overridden with more specific tests.
-     * 
-     * @param newRow The desired row.
-     * @param newColumn The desired column.
-     * @return <code>true</code> if the move can be made.
      */
     public boolean canMoveTo(int newRow, int newColumn) {
         if (board == null) return false;
@@ -544,11 +518,7 @@ public abstract class Piece extends Observable {
 
         public void mouseMoved(MouseEvent e) {}
     }
-    
-    /**
-     * @param rectangle
-     * @return
-     */
+
     private Rectangle enlarge(Rectangle r) {
         r.x -= 2;
         r.y -= 2;

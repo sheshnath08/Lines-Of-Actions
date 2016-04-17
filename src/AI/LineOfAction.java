@@ -8,7 +8,6 @@ import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 
 /**
  *
@@ -30,12 +29,12 @@ public class LineOfAction extends JFrame{
 
     Piece redPiece[] = new RoundPiece[6];
     Piece blackPiece[] = new RoundPiece[6];
-    Piece highlight = new RoundPiece(Color.cyan);
+    HighlightBlock highlight[];
     int state[][];
 
     static boolean humanPlayerTurn = true;
-    Player white;
-    Player black;
+    Player human;
+    Player ai;
     int clickCount;
     
     public static void main(String[] args) {
@@ -124,7 +123,7 @@ public class LineOfAction extends JFrame{
         board.place(redPiece[4], 2, 4);
         board.place(redPiece[5], 3, 4);
 
-        //placing black piece
+        //placing ai piece
         board.place(blackPiece[0], 0, 1);
         board.place(blackPiece[1], 0, 2);
         board.place(blackPiece[2], 0, 3);
@@ -132,15 +131,15 @@ public class LineOfAction extends JFrame{
         board.place(blackPiece[4], 4, 2);
         board.place(blackPiece[5], 4, 3);
 
-        white = new Player(false,redPiece);
-        black = new Player(true,blackPiece);
-        white.addPieces(redPiece);
-        black.addPieces(blackPiece);
-/*
-        white = new Player(true,blackPiece);
-        black = new Player(false,redPiece);
-        white.addPieces(blackPiece);
-        black.addPieces(redPiece);
+      human = new Player(false,redPiece);
+        ai = new Player(true,blackPiece);
+        human.addPieces(redPiece);
+        ai.addPieces(blackPiece);
+ /*
+        human = new Player(true,blackPiece);
+        ai = new Player(false,redPiece);
+        human.addPieces(blackPiece);
+        ai.addPieces(redPiece);
 
 */
         play();
@@ -151,14 +150,11 @@ public class LineOfAction extends JFrame{
 
         display.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                //clickCount = 0;
                 if(clickCount == 0){
                     selectedRow = board.getSelectedRow();
                     selectedColumn = board.getSelectedColumn();
-                    if(white.hasPiece(board.getPiece(selectedRow,selectedColumn))){
+                    if(human.hasPiece(board.getPiece(selectedRow,selectedColumn))){
                         clickCount++;
-                        //call method to show valid position
-                        showValidMoves(selectedRow,selectedColumn);
                         board.setSelectedSquare(selectedRow,selectedColumn);
                     }
                 }
@@ -166,47 +162,53 @@ public class LineOfAction extends JFrame{
                     newRow = board.getSelectedRow();
                     newColumn = board.getSelectedColumn();
                     //check if new selected location is valid
-                    if(board.isEmpty(newRow,newColumn)){
-                        clickCount++;
-                    }
-                    else // either selecting to capture black key or selecting new key for move
+                     // either selecting to capture ai key or selecting new key for move
+                    if(human.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
                     {
-                        if(white.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
-                        {
                             clickCount = 1;
                             board.setSelectedSquare(newRow,newColumn);
                             selectedRow = newRow;
                             selectedColumn = newColumn;
+                            //removeHighlight();
+                    }
+                    else
+                    {
+                        if(isValidMove(newRow,newColumn)){
+                            makeMove(newRow,newColumn);
+                            //humanPlayerTurn = false;
+                            clickCount = 0;
+                            //removeHighlight();
+                            //playAI(); // called for AI's Move
                         }
-                        else // trying to capture black key
-                        {
-
+                        else{
+                           clickCount = 1;
                         }
                     }
-
                 }
-                if(humanPlayerTurn) // if Human Players humanPlayerTurn
-               {
-                   if(white.hasPiece(board.getPiece(selectedRow,selectedColumn)) && clickCount == 2){
-                       if(board.isEmpty(newRow,newColumn)){
-                           if(board.getPiece(selectedRow,selectedColumn).canMoveTo(newRow,newColumn)){
-                               board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
-                               state[newRow][newColumn] = -1;
-                               state[selectedRow][selectedColumn] = 0;
-                               //humanPlayerTurn = false;
-                               clickCount = 0;
-                               //playAI(); // called for AI's Move
-                           }
-                           else{
-                               clickCount = 1;
-                           }
-
-                       }
-                   }
-               }
+                if(clickCount ==1){
+                    //showValidMoves(selectedRow,selectedColumn);
+                }
 
             }
         });
+    }
+
+    private void makeMove(int newRow, int newColumn) {
+        //cheking is player trying to capture
+        if(ai.hasPiece(board.getPiece(newRow,newColumn))){
+            ai.removePiece(board.getPiece(newRow,newColumn));
+            board.remove(newRow,newColumn);
+            state[newRow][newColumn] = 0;
+        }
+        board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
+        state[newRow][newColumn] = -1;
+        state[selectedRow][selectedColumn] = 0;
+    }
+
+    private void removeHighlight() {
+        for(int i=0;i<8;i++){
+            board.remove(highlight[i]);
+        }
     }
 
     private void playAI() {
@@ -216,28 +218,85 @@ public class LineOfAction extends JFrame{
     }
 
     private void showValidMoves(int selectedRow, int selectedColumn) {
+        highlight = new HighlightBlock[8];
         int colSum=0;
         int rowSum=0;
-        for(int i = 0 ;i<board.getRows();i++){
-            rowSum = rowSum+ Math.abs(state[selectedRow][i]);
-            colSum = colSum + Math.abs(state[i][selectedColumn]);
+        int dg1Sum=0;
+        int dg2Sum = 0;
+        for(int i = 1 ;i<board.getRows();i++){
+            rowSum = rowSum+ Math.abs(state[selectedRow][i-1]);
+            colSum = colSum + Math.abs(state[i-1][selectedColumn]);
+            // TODO: find diagonal sum here
         }
-        HighlightBlock hb = new HighlightBlock();
-        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(rowSum,colSum)){
-            //board.place(hb,selectedRow,rowSum+selectedColumn);
-        }
-    }
 
+
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow,selectedColumn+rowSum)){
+            highlight[0] = new HighlightBlock();
+            highlight[0].place(board,selectedRow,selectedColumn+rowSum);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow+colSum,selectedColumn)){
+            highlight[1] = new HighlightBlock();
+            highlight[1].place(board,selectedRow+colSum,selectedColumn);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow,selectedColumn-rowSum)){
+            highlight[2] = new HighlightBlock();
+            highlight[2].place(board,selectedRow,selectedColumn-rowSum);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow-colSum,selectedColumn)){
+            highlight[3] = new HighlightBlock();
+            highlight[3].place(board,selectedRow-colSum,selectedColumn);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow+dg1Sum,selectedColumn+dg1Sum)){
+            highlight[4] = new HighlightBlock();
+            highlight[4].place(board,selectedRow+dg1Sum,selectedColumn+dg1Sum);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow-dg1Sum,selectedColumn-dg1Sum)){
+            highlight[5] = new HighlightBlock();
+            highlight[5].place(board,selectedRow-dg1Sum,selectedColumn-dg1Sum);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow+dg2Sum,selectedColumn+dg2Sum)){
+            highlight[4] = new HighlightBlock();
+            highlight[4].place(board,selectedRow+dg2Sum,selectedColumn+dg2Sum);
+        }
+        if(board.getPiece(selectedRow,selectedColumn).canMoveTo(selectedRow-dg2Sum,selectedColumn-dg2Sum)){
+            highlight[5] = new HighlightBlock();
+            highlight[5].place(board,selectedRow-dg2Sum,selectedColumn-dg2Sum);
+        }
+
+    }
+// below method is not required
     private boolean isValidMove(int row,int column){
         int colSum=0;
         int rowSum=0;
+        int dg1Sum = 0;
+        int dg2Sum = 0;
         for(int i = 0 ;i<board.getRows();i++){
             rowSum = rowSum+ Math.abs(state[selectedRow][i]);
             colSum = colSum + Math.abs(state[i][selectedColumn]);
         }
+
+        dg1Sum = dg1Sum + Math.abs(state[selectedRow][selectedColumn]);
+        dg2Sum = dg2Sum + Math.abs(state[selectedRow][selectedColumn]);
+        for(int i=1;i<board.getRows();i++){
+            if(selectedRow-i>=0 && selectedColumn - i >= 0) {
+                dg1Sum = dg1Sum + Math.abs(state[selectedRow - i][selectedColumn - i]);
+            }
+
+            if(selectedRow+i<board.getRows() && selectedColumn +i < board.getRows()) {
+                dg1Sum = dg1Sum + Math.abs(state[selectedRow + i][selectedColumn +i]);
+            }
+
+            if(selectedRow-i>=0 && selectedColumn +i < board.getRows()) {
+                dg2Sum = dg2Sum + Math.abs(state[selectedRow - i][selectedColumn + i]);
+            }
+
+            if(selectedRow+i<board.getRows() && selectedColumn - i >= 0) {
+                dg2Sum = dg2Sum + Math.abs(state[selectedRow + i][selectedColumn -i]);
+            }
+        }
         if(row == selectedRow)//moving in same row
         {
-            if(selectedColumn == column-colSum){
+            if(column == selectedColumn+rowSum || column == selectedColumn - rowSum){
                 return true;
             }
             else{
@@ -246,7 +305,7 @@ public class LineOfAction extends JFrame{
         }
         else if(column == selectedColumn)// moving in same column
         {
-            if(selectedRow == row-rowSum){
+            if(row == selectedRow+colSum || row == selectedRow - colSum){
                 return true;
             }
             else{
@@ -255,7 +314,15 @@ public class LineOfAction extends JFrame{
         }
         else // moving in diagonal
         {
+            if(((row == selectedRow + dg1Sum) && (column == selectedColumn + dg1Sum))
+                    || ((row == selectedRow - dg1Sum) && (column == selectedColumn - dg1Sum))){
+                return true;
+            }
 
+            if(((row == selectedRow + dg2Sum) && (column == selectedColumn - dg2Sum))
+                    || ((row == selectedRow - dg2Sum) && (column == selectedColumn +dg2Sum))){
+                return true;
+            }
         }
 
         return false;

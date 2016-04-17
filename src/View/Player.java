@@ -33,4 +33,9 @@ public class Player {
             return false;
         }
     }
+
+    public boolean removePiece(Piece piece){
+        return pieceVector.remove(piece);
+    }
+
 }
