@@ -6,17 +6,20 @@ import java.util.Vector;
  * Created by sheshnath on 4/10/2016.
  */
 public class Player {
-    boolean black;
+    boolean human;
     int key; // number of key a player currently has
     Vector<Piece> pieceVector;
-    public Player(boolean black, Piece pieceVector[]){
-        this.black = black;
+    public Player(boolean human, Piece pieceVector[]){
+        this.human = human;
         this.pieceVector = new Vector(pieceVector.length);
         key = pieceVector.length;
     }
     //adding piece to player while initializing board
     public void addPieces(Piece c[]){
         for(int i=0;i<key;i++){
+            if(human){
+                c[i].withHuman = true;
+            }
             pieceVector.addElement(c[i]);
         }
     }

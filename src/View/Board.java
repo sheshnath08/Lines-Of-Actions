@@ -111,19 +111,7 @@ public class Board extends Observable implements Observer {
         return (Piece) board[row][column].lastElement();
     }
 
-    /**
-     * Returns a (possibly empty) Stack of all the pieces in the given position.
-     * The top element of the stack is the topmost element in that board
-     * location.
-     *
-     * @param row
-     *        A row number on this board.
-     * @param column
-     *        A column number on this board.
-     * @return The pieces in this board location.
-     * @throws ArrayIndexOutOfBoundsException
-     *         If the specified location does not exist.
-     */
+
     public Stack getPieces(int row, int column) {
         Stack pieces = new Stack();
         for (Iterator iter = board[row][column].iterator(); iter.hasNext();) {
@@ -135,10 +123,6 @@ public class Board extends Observable implements Observer {
     /**
      * Returns <code>true</code> if the given row and column on this board
      * contains no Pieces.
-     * 
-     * @param row The row to examine.
-     * @param column The column to examine.
-     * @return <code>true</code> if this location is empty.
      */
     public boolean isEmpty(int row, int column) {
         return board[row][column].isEmpty();
@@ -148,35 +132,16 @@ public class Board extends Observable implements Observer {
      * Given x-y coordinates, finds and returns the topmost piece at that
      * location on this board, or null if there is no such piece.
      *
-     * @param x
-     *        The local x coordinate.
-     * @param y
-     *        The local y coordinate.
-     * @return The <code>Piece</code> in the [row][column] containing the
-     *         given (x, y) coordinates, or <code>null</code> if that location
-     *         is empty. If the board location contains more than one piece, the
-     *         "topmost" piece is returned.
-     * @throws ArrayIndexOutOfBoundsException
-     *         If the specified location does not exist.
      */
     protected Piece findPiece(int x, int y) {
         return getPiece(yToRow(y), xToColumn(x));
     }
 
-    /**
-     * Sets the currently selected piece to the given piece (may be null).
-   *
-    * @param piece
-    *        The piece to be selected (which must be selectable), or null if no
-    *        piece is to be selected.
-    */
+
 
     /**
      * Given an x coordinate, determines which column it is in.
-     * 
-     * @param x
-     *        A local x coordinate.
-     * @return The number of the column containing the given x coordinate.
+     *
      */
     public int xToColumn(int x) {
         return Math.min(columns - 1, (x * columns) / display.getWidth());
@@ -196,10 +161,7 @@ public class Board extends Observable implements Observer {
     /**
      * Returns the X coordinate of the left side of cells in the given column of
      * this Board.
-     * 
-     * @param columnNumber
-     *        A column number.
-     * @return The X coordinate of the left side of that column.
+     *
      */
     protected int columnToX(int columnNumber) {
         return (columnNumber * (display.getWidth() - 1)) / columns;
@@ -222,16 +184,7 @@ public class Board extends Observable implements Observer {
      * It is possible to place more than one piece in a given board
      * location, in which case later pieces go "on top of" earlier
      * pieces.
-     * 
-     * @param piece
-     *        The <code>Piece</code> to be placed.
-     * @param row
-     *        The row in which to place the piece.
-     * @param column
-     *        The column in which to place the piece.
-     * @throws ArrayIndexOutOfBoundsException
-     *         If the specified location does not exist.
-     */
+   */
     public void place(Piece piece, int row, int column) {
         if (piece.getBoard() != null) {
             throw new IllegalArgumentException("Piece " + piece + " is already on a board");
@@ -246,14 +199,7 @@ public class Board extends Observable implements Observer {
     /**
      * Removes and returns the top piece at the given row and column on this Board.
      * 
-     * @param row
-     *        The row of the piece to be removed.
-     * @param column
-     *        The column of the piece to be removed.
-     * @return The Piece that was removed.
-     * @throws ArrayIndexOutOfBoundsException
-     *         If the specified location does not exist.
-     */
+    */
     public Piece remove(int row, int column) {
         Piece piece = getPiece(row, column);
         if (piece == null) {
@@ -328,9 +274,39 @@ public class Board extends Observable implements Observer {
         int dg1Sum = dg1Sum(selectedRow,selectedColumn);
         int dg2Sum = dg2Sum(selectedRow,selectedColumn);
 
+        if(row<0 || row>=rows || column <0 || column>=columns || selectedRow <0 ||  selectedColumn<0){
+            return false;
+        }
+
+        // checking if there is already friend piece in row,column
+      if(!isEmpty(row,column) && getPiece(selectedRow,selectedColumn).withHuman == getPiece(row,column).withHuman){
+            return false;
+        }
+
+        //checking if jumping over enemy piece
+
         if(row == selectedRow)//moving in same row
         {
-            if(column == selectedColumn+rowSum || column == Math.abs(selectedColumn - rowSum)){
+            int n1 = selectedColumn+rowSum;
+            int n2 = selectedColumn - rowSum;
+            if(column == n2){
+                for(int i=1;i<rowSum-1;i++){
+                    if(!isEmpty(row,selectedColumn-i)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn-i).withHuman){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            else if(column == n1){
+                for(int i=1;i<rowSum-1;i++){
+                    if(!isEmpty(row,selectedColumn+i)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn+i).withHuman){
+                            return false;
+                        }
+                    }
+                }
                 return true;
             }
             else{
@@ -339,7 +315,25 @@ public class Board extends Observable implements Observer {
         }
         else if(column == selectedColumn)// moving in same column
         {
-            if(row == selectedRow+colSum || row == Math.abs(selectedRow - colSum)){
+            if(row == selectedRow+colSum)
+            {
+                for(int i=1;i<colSum-1;i++){
+                    if(!isEmpty(selectedRow+i,selectedColumn)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow+i,selectedColumn).withHuman){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            else if(row == selectedRow - colSum){
+                for(int i=1;i<colSum-1;i++){
+                    if(!isEmpty(selectedRow-i,selectedColumn)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow-i,selectedColumn).withHuman){
+                            return false;
+                        }
+                    }
+                }
                 return true;
             }
             else{
@@ -348,13 +342,45 @@ public class Board extends Observable implements Observer {
         }
         else // moving in diagonal
         {
-            if(((row == selectedRow + dg1Sum) && (column == selectedColumn + dg1Sum))
-                    || ((row == selectedRow - dg1Sum) && (column == selectedColumn - dg1Sum))){
+            if(((row == selectedRow + dg1Sum) && (column == selectedColumn + dg1Sum))){
+                for(int i=1;i<dg1Sum;i++){
+                    if(!isEmpty(selectedRow+i,selectedColumn+i)){
+                        if(getPiece(selectedRow+i,selectedColumn+i).withHuman != getPiece(selectedRow,selectedColumn).withHuman){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            else if((row == selectedRow - dg1Sum) && (column == selectedColumn - dg1Sum)){
+                for(int i=1;i<dg1Sum;i++){
+                    if(!isEmpty(selectedRow-i,selectedColumn-i)){
+                        if(getPiece(selectedRow-i,selectedColumn-i).withHuman != getPiece(selectedRow,selectedColumn).withHuman){
+                            return false;
+                        }
+                    }
+                }
                 return true;
             }
 
-            if(((row == selectedRow + dg2Sum) && (column == selectedColumn - dg2Sum))
-                    || ((row == selectedRow - dg2Sum) && (column == selectedColumn +dg2Sum))){
+            if((row == selectedRow + dg2Sum) && (column == selectedColumn - dg2Sum)){
+                for(int i=1;i<dg2Sum;i++){
+                    if(!isEmpty(selectedRow+i,selectedColumn-i)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow+i,selectedColumn-i).withHuman){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            else if((row == selectedRow - dg2Sum) && (column == selectedColumn +dg2Sum)){
+                for(int i=1;i<dg2Sum;i++){
+                    if(!isEmpty(selectedRow-i,selectedColumn+i)){
+                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow-i,selectedColumn+i).withHuman){
+                            return false;
+                        }
+                    }
+                }
                 return true;
             }
         }
@@ -363,12 +389,19 @@ public class Board extends Observable implements Observer {
     }
 
 
+
     // function to update action of piece after every move
     public void updatePiecesActions(){
         for(int i=0;i<redPiece.length;i++){
+            if(redPiece[i].getRow()<0){
+                continue;
+            }
             redPiece[i].updateAction();
         }
         for(int i=0;i<blackPiece.length;i++){
+            if(blackPiece[i].getRow()<0){
+                continue;
+            }
             blackPiece[i].updateAction();
         }
     }

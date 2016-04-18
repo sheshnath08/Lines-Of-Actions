@@ -128,8 +128,8 @@ public class LineOfAction extends JFrame{
         board.place(board.blackPiece[4], 4, 2);
         board.place(board.blackPiece[5], 4, 3);
 
-      human = new Player(false,board.redPiece);
-        ai = new Player(true,board.blackPiece);
+      human = new Player(true,board.redPiece);
+        ai = new Player(false,board.blackPiece);
         human.addPieces(board.redPiece);
         ai.addPieces(board.blackPiece);
  /*
@@ -155,6 +155,7 @@ public class LineOfAction extends JFrame{
                     if(human.hasPiece(board.getPiece(selectedRow,selectedColumn))){
                         clickCount++;
                         board.setSelectedSquare(selectedRow,selectedColumn);
+                        showValidMoves(selectedRow,selectedColumn);
                     }
                 }
                 else{
@@ -164,11 +165,12 @@ public class LineOfAction extends JFrame{
                      // either selecting to capture ai key or selecting new key for move
                     if(human.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
                     {
+                        removeHighlight();
                             clickCount = 1;
                             board.setSelectedSquare(newRow,newColumn);
                             selectedRow = newRow;
                             selectedColumn = newColumn;
-                            removeHighlight();
+                        showValidMoves(selectedRow,selectedColumn);
                     }
                     else
                     {
@@ -183,9 +185,6 @@ public class LineOfAction extends JFrame{
                            clickCount = 1;
                         }
                     }
-                }
-                if(clickCount ==1){
-                    showValidMoves(selectedRow,selectedColumn);
                 }
 
             }

@@ -16,7 +16,7 @@ public abstract class Piece extends Observable {
     private int speed = -1; // Negative means to use Board default
     private static final int PAUSE_MS = 50;
     private static final int FRAME_RATE = 1000 / PAUSE_MS;
-    private static int state[][];
+    public boolean withHuman = false;
     public ArrayList<int[]> action = new ArrayList<int[]>();
 
     /**
@@ -345,6 +345,7 @@ public abstract class Piece extends Observable {
     }
 
     public void updateAction(){
+        action = new ArrayList<int[]>();
         int rowSum = board.rowSum(row,column);
         int colSum = board.colSum(row,column);
         int dg1Sum = board.dg1Sum(row,column);
