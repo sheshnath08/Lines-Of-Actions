@@ -175,10 +175,10 @@ public class LineOfAction extends JFrame{
                     else
                     {
                         if(board.isValidMove(selectedRow,selectedColumn,newRow,newColumn)){
+                            removeHighlight();
                             makeMove(newRow,newColumn);
                             //humanPlayerTurn = false;
                             clickCount = 0;
-                            removeHighlight();
                             //playAI(); // called for AI's Move
                         }
                         else{
