@@ -35,9 +35,9 @@ public class LineOfAction extends JFrame{
     int clickCount;
     
     public static void main(String[] args) {
-        LineOfAction test = new LineOfAction();
+        LineOfAction game = new LineOfAction();
         try {
-            test.initializeBoard();
+            game.initializeBoard();
         }
         catch (Exception e) {
             e.printStackTrace(System.out);
