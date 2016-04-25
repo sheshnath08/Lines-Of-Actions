@@ -1,5 +1,6 @@
 package View;
 
+import java.awt.*;
 import java.util.Vector;
 
 /**
@@ -8,9 +9,11 @@ import java.util.Vector;
 public class Player {
     boolean human;
     int key; // number of key a player currently has
-    Vector<Piece> pieceVector;
+    private Vector<Piece> pieceVector;
+    private Piece piece[];
     public Player(boolean human, Piece pieceVector[]){
         this.human = human;
+        this.piece = pieceVector;
         this.pieceVector = new Vector(pieceVector.length);
         key = pieceVector.length;
     }
@@ -38,9 +41,34 @@ public class Player {
         }
     }
 
+    public Piece[] getPiece(){
+        return piece;
+    }
+    public Vector<Piece> getPieceVector() {
+        return pieceVector;
+    }
+
     //remove piece when other player captures the piece
     public boolean removePiece(Piece piece){
-        return pieceVector.remove(piece);
+        boolean remove = false;
+        remove = pieceVector.remove(piece);
+        this.piece = new Piece[pieceVector.size()];
+        for(int i=0;i<pieceVector.size();i++){
+            this.piece[i] = pieceVector.get(i);
+        }
+        return remove;
+    }
+
+    public Piece getPieceAt(int row,int column){
+        Piece piece = null;
+        for(int i=0;i<pieceVector.size();i++){
+            piece = pieceVector.get(i);
+            if(piece.getRow() == row && piece.getColumn() == column){
+                return piece;
+            }
+        }
+        piece = null;
+        return piece;
     }
 
 }

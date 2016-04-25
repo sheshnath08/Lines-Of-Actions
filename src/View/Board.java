@@ -222,7 +222,7 @@ public class Board extends Observable implements Observer {
     Methods to find row-sum, col-sum and diagonal sum
      */
 
-    public int rowSum(int selectedRow, int selectedColumn){
+    public int rowSum(int state[][],int selectedRow, int selectedColumn){
 
         int rowSum=0;
         for(int i = 0 ;i<rows;i++){
@@ -231,7 +231,7 @@ public class Board extends Observable implements Observer {
         return rowSum;
     }
 
-    public int colSum(int selectedRow,int selectedColumn){
+    public int colSum(int state[][],int selectedRow,int selectedColumn){
         int colSum=0;
         for(int i = 0 ;i<rows;i++){
             colSum = colSum+ Math.abs(state[i][selectedColumn]);
@@ -239,7 +239,7 @@ public class Board extends Observable implements Observer {
         return colSum;
     }
 
-    public int dg1Sum(int selectedRow,int selectedColumn){
+    public int dg1Sum(int state[][],int selectedRow,int selectedColumn){
         int dg1Sum = 0;
         dg1Sum = dg1Sum + Math.abs(state[selectedRow][selectedColumn]);
         for(int i=1;i<getRows();i++){
@@ -253,7 +253,7 @@ public class Board extends Observable implements Observer {
         return dg1Sum;
     }
 
-    public int dg2Sum(int selectedRow,int selectedColumn){
+    public int dg2Sum(int state[][],int selectedRow,int selectedColumn){
         int dg2Sum = 0;
         dg2Sum = dg2Sum + Math.abs(state[selectedRow][selectedColumn]);
         for(int i=1;i<rows;i++){
@@ -268,11 +268,11 @@ public class Board extends Observable implements Observer {
         return dg2Sum;
     }
 
-    public boolean isValidMove(int selectedRow, int selectedColumn, int row,int column){
-        int colSum= colSum(selectedRow,selectedColumn);
-        int rowSum= rowSum(selectedRow,selectedColumn);
-        int dg1Sum = dg1Sum(selectedRow,selectedColumn);
-        int dg2Sum = dg2Sum(selectedRow,selectedColumn);
+    public boolean isValidMove(int state[][],int selectedRow, int selectedColumn, int row,int column){
+        int colSum= colSum(state,selectedRow,selectedColumn);
+        int rowSum= rowSum(state,selectedRow,selectedColumn);
+        int dg1Sum = dg1Sum(state,selectedRow,selectedColumn);
+        int dg2Sum = dg2Sum(state,selectedRow,selectedColumn);
 
         if(row<0 || row>=rows || column <0 || column>=columns || selectedRow <0 ||  selectedColumn<0){
             return false;
@@ -290,7 +290,7 @@ public class Board extends Observable implements Observer {
             int n1 = selectedColumn+rowSum;
             int n2 = selectedColumn - rowSum;
             if(column == n2){
-                for(int i=1;i<rowSum-1;i++){
+                for(int i=1;i<rowSum;i++){
                     if(!isEmpty(row,selectedColumn-i)){
                         if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn-i).withHuman){
                             return false;
@@ -300,7 +300,7 @@ public class Board extends Observable implements Observer {
                 return true;
             }
             else if(column == n1){
-                for(int i=1;i<rowSum-1;i++){
+                for(int i=1;i<rowSum;i++){
                     if(!isEmpty(row,selectedColumn+i)){
                         if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn+i).withHuman){
                             return false;
@@ -317,7 +317,7 @@ public class Board extends Observable implements Observer {
         {
             if(row == selectedRow+colSum)
             {
-                for(int i=1;i<colSum-1;i++){
+                for(int i=1;i<colSum;i++){
                     if(!isEmpty(selectedRow+i,selectedColumn)){
                         if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow+i,selectedColumn).withHuman){
                             return false;
@@ -327,7 +327,7 @@ public class Board extends Observable implements Observer {
                 return true;
             }
             else if(row == selectedRow - colSum){
-                for(int i=1;i<colSum-1;i++){
+                for(int i=1;i<colSum;i++){
                     if(!isEmpty(selectedRow-i,selectedColumn)){
                         if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow-i,selectedColumn).withHuman){
                             return false;
@@ -391,18 +391,18 @@ public class Board extends Observable implements Observer {
 
 
     // function to update action of piece after every move
-    public void updatePiecesActions(){
+    public void updatePiecesActions(int state[][]){
         for(int i=0;i<redPiece.length;i++){
             if(redPiece[i].getRow()<0){
                 continue;
             }
-            redPiece[i].updateAction();
+            redPiece[i].updateAction(state);
         }
         for(int i=0;i<blackPiece.length;i++){
             if(blackPiece[i].getRow()<0){
                 continue;
             }
-            blackPiece[i].updateAction();
+            blackPiece[i].updateAction(state);
         }
     }
     /**

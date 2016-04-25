@@ -344,15 +344,15 @@ public abstract class Piece extends Observable {
         return r;
     }
 
-    public void updateAction(){
+    public void updateAction(int state[][]){
         action = new ArrayList<int[]>();
-        int rowSum = board.rowSum(row,column);
-        int colSum = board.colSum(row,column);
-        int dg1Sum = board.dg1Sum(row,column);
-        int dg2Sum = board.dg2Sum(row,column);
+        int rowSum = board.rowSum(state,row,column);
+        int colSum = board.colSum(state,row,column);
+        int dg1Sum = board.dg1Sum(state,row,column);
+        int dg2Sum = board.dg2Sum(state,row,column);
         int move[] = new int[2]; // to store action's row,column
         //moving up
-        if(board.isValidMove(row,column,row+colSum,column)){
+        if(board.isValidMove(state,row,column,row+colSum,column)){
             move[0] = row+colSum;
             move[1] = column;
         }
@@ -363,7 +363,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         //down
-        if(board.isValidMove(row,column,row-colSum,column)){
+        if(board.isValidMove(state,row,column,row-colSum,column)){
             move[0] = row-colSum;
             move[1] = column;
         }
@@ -374,7 +374,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         //moving right
-        if(board.isValidMove(row,column,row,column+rowSum)){
+        if(board.isValidMove(state,row,column,row,column+rowSum)){
             move[0] = row;
             move[1] = column+rowSum;
         }
@@ -385,7 +385,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         // moving left
-        if(board.isValidMove(row,column,row,column-rowSum)){
+        if(board.isValidMove(state,row,column,row,column-rowSum)){
             move[0] = row;
             move[1] = column-rowSum;
         }
@@ -396,7 +396,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         //moving right up
-        if(board.isValidMove(row,column,row+dg1Sum,column+dg1Sum)){
+        if(board.isValidMove(state,row,column,row+dg1Sum,column+dg1Sum)){
             move[0] = row+dg1Sum;
             move[1] = column+dg1Sum;
         }
@@ -407,7 +407,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         //left down
-        if(board.isValidMove(row,column,row-dg1Sum,column-dg1Sum)){
+        if(board.isValidMove(state,row,column,row-dg1Sum,column-dg1Sum)){
             move[0] = row-dg1Sum;
             move[1] = column-dg1Sum;
         }
@@ -418,7 +418,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         //moving left up
-        if(board.isValidMove(row,column,row-dg2Sum,column+dg2Sum)){
+        if(board.isValidMove(state,row,column,row-dg2Sum,column+dg2Sum)){
             move[0] = row-dg2Sum;
             move[1] = column+dg2Sum;
         }
@@ -429,7 +429,7 @@ public abstract class Piece extends Observable {
         action.add(move);
         move = new int[2];
         // moving left
-        if(board.isValidMove(row,column,row+dg2Sum,column-dg2Sum)){
+        if(board.isValidMove(state,row,column,row+dg2Sum,column-dg2Sum)){
             move[0] = row+dg2Sum;
             move[1] = column-dg2Sum;
         }

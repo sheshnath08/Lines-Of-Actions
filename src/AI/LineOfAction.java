@@ -1,10 +1,12 @@
 package AI;
 
 import View.*;
+import com.sun.rowset.internal.Row;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,19 +23,21 @@ public class LineOfAction extends JFrame{
     JPanel display;
     JButton quitButton;
     LineOfAction self;
+    AIFunctions aiFunctions;
     final int ROWS = 5;
     final int COLUMNS = 5;
     int selectedRow;
     int selectedColumn;
     int newRow;
     int newColumn;
-
+    boolean colorBlack = true; //human selected black color
 
     static boolean humanPlayerTurn = true;
     Player human;
     Player ai;
     int clickCount;
-    
+    private int laststate[][] = new int[5][5];
+
     public static void main(String[] args) {
         LineOfAction game = new LineOfAction();
         try {
@@ -43,29 +47,29 @@ public class LineOfAction extends JFrame{
             e.printStackTrace(System.out);
         }
     }
-    
+
     void initializeBoard() {
         // Provide access to this object from anonymous listeners
         self = this;
-        
+
         // Create a Board (a kind of JPanel) and add it to this Frame.
         board = new Board(ROWS, COLUMNS);
         display = board.getJPanel();
 
         getContentPane().add(display, BorderLayout.CENTER);
-        
+
         // Install button panel
         buttonPanel = new JPanel();
         getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-        
+
         installQuitButton();
         implementCloseBox();
-        
+
 
         pack();
         setSize(700, 750);
         setVisible(true);
-        
+
         placePiecesOnBoard();
 
     }
@@ -79,8 +83,8 @@ public class LineOfAction extends JFrame{
         buttonPanel.add(quitButton);
         quitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-        }});
+                playAI();
+            }});
     }
 
     /**
@@ -92,12 +96,12 @@ public class LineOfAction extends JFrame{
             public void windowClosing(WindowEvent e) {
                 dispose();
                 System.exit(0);
-        }});
+            }});
     }
 
 
     /**
-     * 
+     *
      */
     private void placePiecesOnBoard() {
         // Create and place some pieces
@@ -128,80 +132,119 @@ public class LineOfAction extends JFrame{
         board.place(board.blackPiece[4], 4, 2);
         board.place(board.blackPiece[5], 4, 3);
 
-      human = new Player(true,board.redPiece);
-        ai = new Player(false,board.blackPiece);
-        human.addPieces(board.redPiece);
-        ai.addPieces(board.blackPiece);
- /*
-        human = new Player(true,blackPiece);
-        ai = new Player(false,redPiece);
-        human.addPieces(blackPiece);
-        ai.addPieces(redPiece);
+        //assigning pieces to player
+        if(colorBlack){
+            human = new Player(true,board.blackPiece);
+            ai = new Player(false,board.redPiece);
+            human.addPieces(board.blackPiece);
+            ai.addPieces(board.redPiece);
+        }
 
-*/
-        board.updatePiecesActions();
-        play();
+        else{
+            human = new Player(true,board.redPiece);
+            ai = new Player(false,board.blackPiece);
+            human.addPieces(board.redPiece);
+            ai.addPieces(board.blackPiece);
+        }
+       board.updatePiecesActions(board.state);
+        if(colorBlack){
+            playHuman();
+        }
+        else{
+           // playAI();
+            //updating states
+            board.updatePiecesActions(board.state);
+        }
 
     }
 
 
-    private void play() {
-
-        display.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if(clickCount == 0){
-                    selectedRow = board.getSelectedRow();
-                    selectedColumn = board.getSelectedColumn();
-                    if(human.hasPiece(board.getPiece(selectedRow,selectedColumn))){
-                        clickCount++;
-                        board.setSelectedSquare(selectedRow,selectedColumn);
-                        showValidMoves(selectedRow,selectedColumn);
+    private void playHuman() {
+        if(humanPlayerTurn){
+            display.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if(clickCount == 0){
+                        selectedRow = board.getSelectedRow();
+                        selectedColumn = board.getSelectedColumn();
+                        if(human.hasPiece(board.getPiece(selectedRow,selectedColumn))){
+                            clickCount++;
+                            board.setSelectedSquare(selectedRow,selectedColumn);
+                            showValidMoves(selectedRow,selectedColumn);
+                        }
                     }
-                }
-                else{
-                    newRow = board.getSelectedRow();
-                    newColumn = board.getSelectedColumn();
-                    //check if new selected location is valid
-                     // either selecting to capture ai key or selecting new key for move
-                    if(human.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
-                    {
-                        removeHighlight();
+                    else{
+                        newRow = board.getSelectedRow();
+                        newColumn = board.getSelectedColumn();
+                        //check if new selected location is valid
+                        // selecting new key for move
+                        if(human.hasPiece(board.getPiece(newRow,newColumn))) // selecting new key for move
+                        {
+                            removeHighlight();
                             clickCount = 1;
                             board.setSelectedSquare(newRow,newColumn);
                             selectedRow = newRow;
                             selectedColumn = newColumn;
-                        showValidMoves(selectedRow,selectedColumn);
-                    }
-                    else
-                    {
-                        if(board.isValidMove(selectedRow,selectedColumn,newRow,newColumn)){
-                            removeHighlight();
-                            makeMove(newRow,newColumn);
-                            //humanPlayerTurn = false;
-                            clickCount = 0;
-                            //playAI(); // called for AI's Move
+                            showValidMoves(selectedRow,selectedColumn);
                         }
-                        else{
-                           clickCount = 1;
+                        else
+                        {
+                            if(board.isValidMove(board.state,selectedRow,selectedColumn,newRow,newColumn)){
+                                removeHighlight();
+                                makeMove(humanPlayerTurn,newRow,newColumn,board.getPiece(selectedRow,selectedColumn));
+                                humanPlayerTurn = false;
+                                clickCount = 0;
+                                savelastSate(board.state);
+                                //check winner here
+                            }
+                            else{
+                                clickCount = 1;
+                            }
                         }
                     }
-                }
 
-            }
-        });
+                }
+            });
+        }
+        if(!humanPlayerTurn){
+            playAI(); // called for AI's Move
+        }
     }
 
-    private void makeMove(int newRow, int newColumn) {
-        //cheking is player trying to capture
-        if(ai.hasPiece(board.getPiece(newRow,newColumn))){
-            ai.removePiece(board.getPiece(newRow,newColumn));
-            board.remove(newRow,newColumn);
-            board.state[newRow][newColumn] = 0;
+    private void savelastSate(int[][] state) {
+        for(int i=0;i<ROWS;i++){
+            for(int j=0;j<COLUMNS;j++){
+                laststate[i][j] = board.state[i][j];
+            }
         }
-        board.getPiece(selectedRow,selectedColumn).moveTo(newRow,newColumn);
-        board.state[newRow][newColumn] = -1;
-        board.state[selectedRow][selectedColumn] = 0;
-        board.updatePiecesActions();
+    }
+
+    private void makeMove(boolean humanPlayerTurn, int newRow, int newColumn, Piece piece) {
+        //cheking is player trying to capture
+        Piece newPiece = board.getPiece(newRow,newColumn);
+        if(humanPlayerTurn){
+            if(ai.hasPiece(newPiece)){
+                ai.removePiece(newPiece);
+                board.remove(newPiece);
+                board.state[newRow][newColumn] = 0;
+            }
+        }
+        else // if AI is trying to capture human piece
+        {
+            if(human.hasPiece(newPiece)){
+                human.removePiece(newPiece);
+                board.remove(newPiece);
+                board.state[newRow][newColumn] = 0;
+            }
+        }
+        if(humanPlayerTurn){
+            board.state[newRow][newColumn] = 1;
+        }
+        else{
+            board.state[newRow][newColumn] = -1;
+        }
+        board.state[piece.getRow()][piece.getColumn()] = 0;
+        piece.moveTo(newRow,newColumn);
+        board.updatePiecesActions(board.state);
     }
 
     private void removeHighlight() {
@@ -211,21 +254,37 @@ public class LineOfAction extends JFrame{
     }
 
     private void playAI() {
-        board.getPiece(0,1).moveTo(2,4);
+        aiFunctions = new AIFunctions(board.state,ai,human);
+        int moves[] = aiFunctions.nexBestMove();
+        getLastState(laststate);
+        board.updatePiecesActions(board.state);
+        //need to determine i and j such that ai moves i-th piece with j-th action
+        int i = moves[0];
+        int j = moves[1];
+        Piece piece = ai.getPieceVector().get(i);
+        if(piece.action.get(j)[0]>=0){
+            makeMove(humanPlayerTurn,piece.action.get(j)[0],piece.action.get(j)[1],piece);
+        }
         humanPlayerTurn = true;
-        clickCount = 0;
+    }
+
+    private void getLastState(int[][] laststate) {
+        for(int i=0;i<ROWS;i++){
+            for(int j=0;j<COLUMNS;j++){
+                board.state[i][j] = laststate[i][j];
+            }
+        }
     }
 
 
-    //TODO: Not working properly, check Actions of pieces and board state
     private void showValidMoves(int selectedRow, int selectedColumn) {
-         board.highlight = new HighlightBlock[8];
+        board.highlight = new HighlightBlock[8];
         ArrayList actions = board.getPiece(selectedRow,selectedColumn).getAction();
         for(int i=0;i<actions.size();i++){
             int action[] = ((int[]) actions.get(i));
             if(action[0]>=0 && action[1]>=0){
                 board.highlight[i] = new HighlightBlock();
-                 board.place(board.highlight[i],action[0],action[1]);
+                board.place(board.highlight[i],action[0],action[1]);
             }
         }
 
