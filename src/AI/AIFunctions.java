@@ -1,8 +1,12 @@
 package AI;
 
+import View.Board;
+import View.Constants;
 import View.Piece;
 import View.Player;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Vector;
 
 import static java.lang.Math.max;
@@ -16,22 +20,18 @@ public class AIFunctions {
     returns piece number to move to a valid location.
      */
     //TODO: Terminal test and debug errors
-    //TODO: Update moves when calling result
+    //TODO: winner test method
     private int state[][] = new int[5][5];
-    private Piece aipices[];
-    private Piece humanPiece[];
     private Player ai;
     private Player human;
     int maxUtility =100;
     int minUtility = -100;
+    Board newboard;
     public AIFunctions(int state[][],Player ai, Player human){
-        this.ai = new Player(false,ai.getPiece());
-        this.aipices = new Piece[ai.getPieceVector().size()];
-        this.aipices = this.ai.getPiece();
-        this.human = new Player(true,human.getPiece());
-        this.humanPiece = new Piece[human.getPieceVector().size()];
-        this.humanPiece = this.human.getPiece();
+        this.ai = new Player(false,ai.getPiece(),ai.getColor());
+        this.human = new Player(true,human.getPiece(),human.getColor());
         this.state = state;
+        newboard = new Board(5,5);
     }
     int[] nexBestMove(){
         return alphaBetaSearh(state);
@@ -43,24 +43,28 @@ public class AIFunctions {
     }
 
     int[] maxValue(int state[][],int a,int b,int depth){
-        updateAllPiecesAction(state);
-        int moves[] = new int[3];
-        if(terminalTest(state,ai)){
-            //return stateUtility(state);
+        ArrayList<int[]> actions = new ArrayList<>();
+        int moves[] = new int[4];
+        if(terminalTest(state,ai.getId())){
+            return moves;
         }
-
+        ArrayList<int[]> aiPieces = new ArrayList<>();
+        aiPieces.addAll(getPiecesLocation(state,ai.getId()));
         int v = -1000;
-        for(int i=0;i<aipices.length;i++){
-            Piece piece = aipices[i];
-            for(int j=0;j<piece.action.size();j++){
-                if(piece.action.get(j)[0]<0){
+        for(int i=0;i<aiPieces.size();i++){
+            int row = aiPieces.get(i)[0];
+            int column = aiPieces.get(i)[1];
+            actions.addAll(newboard.getValidAction(state,row,column));
+            for(int j=0;j<actions.size();j++){
+                if(actions.get(j)[0]<0){
                     continue; //checking if valid action or not
                 }
-                v = max(v,minValue(result(state,piece,piece.action.get(j)),a,b,depth+1)[2]);
+                v = max(v,minValue(result(state,row,column,actions.get(j)),a,b,depth+1)[2]);
                 if(v>=b){
-                    moves[0] = i;
+                    moves[0] = row;
                     moves[1] = j;
                     moves[2] = v;
+                    moves[3] = column;
                     return moves;
                 }
                 a = max(a,v);
@@ -70,27 +74,33 @@ public class AIFunctions {
     }
 
     int[] minValue(int state[][],int a,int b,int depth){
-        updateAllPiecesAction(state);
-        int moves[] = new int[3];
-        if(terminalTest(state,human)){
+        ArrayList<int[]> actions = new ArrayList<>();
+        int moves[] = new int[4];
+        if(terminalTest(state,human.getId())){
+            return moves;
             //return stateUtility(state);
         }
-        if(depth > 100){
-            moves[2] = 10;
+        if(depth > 2){
+            moves[2] = minUtility;
             return moves;
         }
+        ArrayList<int[]> humanPieces = new ArrayList<>();
+        humanPieces.addAll(getPiecesLocation(state,human.getId()));
         int v = 1000;
-        for(int i=0;i<humanPiece.length;i++){
-            Piece piece = humanPiece[i];
-            for(int j=0;j<piece.action.size();j++){
-                if(piece.action.get(j)[0]<0){
+        for(int i=0;i<humanPieces.size();i++){
+            int row = humanPieces.get(i)[0];
+            int column = humanPieces.get(i)[1];
+            actions.addAll(newboard.getValidAction(state,row,column));
+            for(int j=0;j<actions.size();j++){
+                if(actions.get(j)[0]<0){
                     continue; //checking if valid action or not
                 }
-                v = min(v,maxValue(result(state,piece,piece.action.get(j)),a,b,depth+1)[2]);
+                v = min(v,maxValue(result(state,row,column,actions.get(j)),a,b,depth+1)[2]);
                 if(v<=a){
-                    moves[0] = i;
+                    moves[0] = row;
                     moves[1]= j;
                     moves[2] = v;
+                    moves[3] = column;
                     return moves;
                 }
                 b = min(b,v);
@@ -99,25 +109,33 @@ public class AIFunctions {
         return moves;
     }
 
-    boolean terminalTest(int state[][], Player player){
-        //if there is no valid action for anykey
-        if(player == human){
-            for(int i=0;i<humanPiece.length;i++){
-                Piece piece = humanPiece[i];
-                for(int j=0;j<piece.action.size();j++){
-                    if(piece.action.get(i)[0]>=0 && piece.action.get(i)[1]>=0){
-                        return false;
-                    }
+    // this method to get all the pieces on perticular state
+    private ArrayList<int[]> getPiecesLocation(int[][] state,int id) {
+        ArrayList<int[]>pieces = new ArrayList<>();
+        for(int i=0;i< 5;i++)//modify i<5 for 6X6
+        {
+            for(int j=0;j<5;j++){
+                if(state[i][j] == id){
+                    pieces.add(new int[]{i,j});
                 }
             }
         }
-        else{
-            for(int i=0;i<aipices.length;i++){
-                Piece piece = aipices[i];
-                for(int j=0;j<piece.action.size();j++){
-                    if(piece.action.get(i)[0]>=0 && piece.action.get(i)[1]>=0){
-                        return false;
-                    }
+        return pieces;
+    }
+
+
+    boolean terminalTest(int state[][], int id){
+        //if there is no valid action for anykey
+        ArrayList<int[]> pieces = new ArrayList<>();
+        ArrayList<int[]> actions = new ArrayList<>();
+        pieces.addAll(getPiecesLocation(state,id));
+        for(int i=0;i<pieces.size();i++) {
+            int row = pieces.get(i)[0];
+            int column = pieces.get(i)[1];
+            actions.addAll(newboard.getValidAction(state, row, column));
+            for (int j = 0; j < actions.size(); j++) {
+                if (actions.get(j)[0] >0) {
+                    return false;
                 }
             }
         }
@@ -129,37 +147,27 @@ public class AIFunctions {
     }
 
     //returns new state after performing action
-    int[][] result(int state[][],Piece piece, int action[]){
+    int[][] result(int state[][],int row,int column, int action[]){
         //write condition to check for capturing key
-        int row = piece.getRow();
-        int column = piece.getColumn();
-        state[row][column] = 0;
-        if(piece.withHuman){
-            if(state[action[0]][action[1]] == -1){
-                ai.removePiece(ai.getPieceAt(action[0],action[1]));
-            }
-           state[action[0]][action[1]] = 1;
+        if(state[row][column] == human.getId()){
+           state[action[0]][action[1]] = human.getId();
         }
         else{
-            state[action[0]][action[1]] = -1;
+            state[action[0]][action[1]] = ai.getId();
         }
+        state[row][column] = 0;
         return state;
     }
 
-    void updateAllPiecesAction(int state[][]){
-        for(int i=0;i<aipices.length;i++){
-            if(aipices[i].getBoard()!= null){
-                aipices[i].updateAction(state);
-            }
+    boolean isWinner(int state[][],Player player){
+        HashSet<Piece> connectedPieces = new HashSet<>();
+        Piece pieces[] = new Piece[player.getPiece().length];
+        pieces = player.getPiece();
+        if(!connectedPieces.contains(pieces[0])){
+            connectedPieces.add(pieces[0]);
+          //  Piece neighbourpiece = getNeighbouringPiece(state,pieces[0]);
         }
-        for(int i=0;i<humanPiece.length;i++){
-            if(humanPiece[i].getBoard()!=null){
-                humanPiece[i].updateAction(state);
-            }
-        }
+        return false;
     }
 
-    //TODO: implement alphabeta method
-
-    //TODO: implement method to find all the actions
 }

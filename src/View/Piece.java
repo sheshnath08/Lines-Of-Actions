@@ -24,7 +24,10 @@ public abstract class Piece extends Observable {
      */
 
     public Piece() {
-
+    }
+    public Piece(int row,int column){
+        this.row = row;
+        this.column = column;
     }
 
     /**
@@ -346,98 +349,7 @@ public abstract class Piece extends Observable {
 
     public void updateAction(int state[][]){
         action = new ArrayList<int[]>();
-        int rowSum = board.rowSum(state,row,column);
-        int colSum = board.colSum(state,row,column);
-        int dg1Sum = board.dg1Sum(state,row,column);
-        int dg2Sum = board.dg2Sum(state,row,column);
-        int move[] = new int[2]; // to store action's row,column
-        //moving up
-        if(board.isValidMove(state,row,column,row+colSum,column)){
-            move[0] = row+colSum;
-            move[1] = column;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        //down
-        if(board.isValidMove(state,row,column,row-colSum,column)){
-            move[0] = row-colSum;
-            move[1] = column;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        //moving right
-        if(board.isValidMove(state,row,column,row,column+rowSum)){
-            move[0] = row;
-            move[1] = column+rowSum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        // moving left
-        if(board.isValidMove(state,row,column,row,column-rowSum)){
-            move[0] = row;
-            move[1] = column-rowSum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        //moving right up
-        if(board.isValidMove(state,row,column,row+dg1Sum,column+dg1Sum)){
-            move[0] = row+dg1Sum;
-            move[1] = column+dg1Sum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        //left down
-        if(board.isValidMove(state,row,column,row-dg1Sum,column-dg1Sum)){
-            move[0] = row-dg1Sum;
-            move[1] = column-dg1Sum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        //moving left up
-        if(board.isValidMove(state,row,column,row-dg2Sum,column+dg2Sum)){
-            move[0] = row-dg2Sum;
-            move[1] = column+dg2Sum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
-        move = new int[2];
-        // moving left
-        if(board.isValidMove(state,row,column,row+dg2Sum,column-dg2Sum)){
-            move[0] = row+dg2Sum;
-            move[1] = column-dg2Sum;
-        }
-        else{
-            move[0] = -1;
-            move[1] = -1;
-        }
-        action.add(move);
+        action = board.getValidAction(state,row,column);
     }
 
 }

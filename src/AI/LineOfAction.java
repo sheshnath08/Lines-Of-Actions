@@ -134,15 +134,15 @@ public class LineOfAction extends JFrame{
 
         //assigning pieces to player
         if(colorBlack){
-            human = new Player(true,board.blackPiece);
-            ai = new Player(false,board.redPiece);
+            human = new Player(true,board.blackPiece,colorBlack);
+            ai = new Player(false,board.redPiece,colorBlack);
             human.addPieces(board.blackPiece);
             ai.addPieces(board.redPiece);
         }
 
         else{
-            human = new Player(true,board.redPiece);
-            ai = new Player(false,board.blackPiece);
+            human = new Player(true,board.redPiece,colorBlack);
+            ai = new Player(false,board.blackPiece,colorBlack);
             human.addPieces(board.redPiece);
             ai.addPieces(board.blackPiece);
         }
@@ -237,10 +237,10 @@ public class LineOfAction extends JFrame{
             }
         }
         if(humanPlayerTurn){
-            board.state[newRow][newColumn] = 1;
+            board.state[newRow][newColumn] = human.getId(); // returns 1 or -1 depending on color
         }
         else{
-            board.state[newRow][newColumn] = -1;
+            board.state[newRow][newColumn] = ai.getId();
         }
         board.state[piece.getRow()][piece.getColumn()] = 0;
         piece.moveTo(newRow,newColumn);
@@ -254,14 +254,16 @@ public class LineOfAction extends JFrame{
     }
 
     private void playAI() {
+        savelastSate(board.state);
         aiFunctions = new AIFunctions(board.state,ai,human);
         int moves[] = aiFunctions.nexBestMove();
         getLastState(laststate);
         board.updatePiecesActions(board.state);
         //need to determine i and j such that ai moves i-th piece with j-th action
         int i = moves[0];
+        int column = moves[3];
         int j = moves[1];
-        Piece piece = ai.getPieceVector().get(i);
+        Piece piece = board.getPiece(i,column);
         if(piece.action.get(j)[0]>=0){
             makeMove(humanPlayerTurn,piece.action.get(j)[0],piece.action.get(j)[1],piece);
         }

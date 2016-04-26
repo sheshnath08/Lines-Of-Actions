@@ -7,11 +7,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.JPanel;
 
 /**
@@ -124,8 +120,8 @@ public class Board extends Observable implements Observer {
      * Returns <code>true</code> if the given row and column on this board
      * contains no Pieces.
      */
-    public boolean isEmpty(int row, int column) {
-        return board[row][column].isEmpty();
+    public boolean isEmpty(int state[][],int row, int column) {
+        return state[row][column] == 0;
     }
 
     /**
@@ -279,7 +275,8 @@ public class Board extends Observable implements Observer {
         }
 
         // checking if there is already friend piece in row,column
-      if(!isEmpty(row,column) && getPiece(selectedRow,selectedColumn).withHuman == getPiece(row,column).withHuman){
+      if(!isEmpty(state,row,column) && state[selectedRow][selectedColumn] == state[row][column]
+              && state[row][column]!=0){
             return false;
         }
 
@@ -291,8 +288,8 @@ public class Board extends Observable implements Observer {
             int n2 = selectedColumn - rowSum;
             if(column == n2){
                 for(int i=1;i<rowSum;i++){
-                    if(!isEmpty(row,selectedColumn-i)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn-i).withHuman){
+                    if(!isEmpty(state,row,selectedColumn-i)){
+                        if(state[selectedRow][selectedColumn] != state[row][selectedColumn-i]){
                             return false;
                         }
                     }
@@ -301,8 +298,8 @@ public class Board extends Observable implements Observer {
             }
             else if(column == n1){
                 for(int i=1;i<rowSum;i++){
-                    if(!isEmpty(row,selectedColumn+i)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(row,selectedColumn+i).withHuman){
+                    if(!isEmpty(state,row,selectedColumn+i)){
+                        if(state[selectedRow][selectedColumn] != state[row][selectedColumn+i]){
                             return false;
                         }
                     }
@@ -318,8 +315,8 @@ public class Board extends Observable implements Observer {
             if(row == selectedRow+colSum)
             {
                 for(int i=1;i<colSum;i++){
-                    if(!isEmpty(selectedRow+i,selectedColumn)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow+i,selectedColumn).withHuman){
+                    if(!isEmpty(state,selectedRow+i,selectedColumn)){
+                        if(state[selectedRow][selectedColumn] != state[selectedRow+i][selectedColumn]){
                             return false;
                         }
                     }
@@ -328,8 +325,8 @@ public class Board extends Observable implements Observer {
             }
             else if(row == selectedRow - colSum){
                 for(int i=1;i<colSum;i++){
-                    if(!isEmpty(selectedRow-i,selectedColumn)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow-i,selectedColumn).withHuman){
+                    if(!isEmpty(state,selectedRow-i,selectedColumn)){
+                        if(state[selectedRow][selectedColumn] != state[selectedRow-i][selectedColumn]){
                             return false;
                         }
                     }
@@ -344,8 +341,8 @@ public class Board extends Observable implements Observer {
         {
             if(((row == selectedRow + dg1Sum) && (column == selectedColumn + dg1Sum))){
                 for(int i=1;i<dg1Sum;i++){
-                    if(!isEmpty(selectedRow+i,selectedColumn+i)){
-                        if(getPiece(selectedRow+i,selectedColumn+i).withHuman != getPiece(selectedRow,selectedColumn).withHuman){
+                    if(!isEmpty(state, selectedRow+i,selectedColumn+i)){
+                        if(state[selectedRow+i][selectedColumn+i] != state[selectedRow][selectedColumn]){
                             return false;
                         }
                     }
@@ -354,8 +351,8 @@ public class Board extends Observable implements Observer {
             }
             else if((row == selectedRow - dg1Sum) && (column == selectedColumn - dg1Sum)){
                 for(int i=1;i<dg1Sum;i++){
-                    if(!isEmpty(selectedRow-i,selectedColumn-i)){
-                        if(getPiece(selectedRow-i,selectedColumn-i).withHuman != getPiece(selectedRow,selectedColumn).withHuman){
+                    if(!isEmpty(state, selectedRow-i,selectedColumn-i)){
+                        if(state[selectedRow-i][selectedColumn-i] != state[selectedRow][selectedColumn]){
                             return false;
                         }
                     }
@@ -365,8 +362,8 @@ public class Board extends Observable implements Observer {
 
             if((row == selectedRow + dg2Sum) && (column == selectedColumn - dg2Sum)){
                 for(int i=1;i<dg2Sum;i++){
-                    if(!isEmpty(selectedRow+i,selectedColumn-i)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow+i,selectedColumn-i).withHuman){
+                    if(!isEmpty(state, selectedRow+i,selectedColumn-i)){
+                        if(state[selectedRow][selectedColumn] != state[selectedRow+i][selectedColumn-i]){
                             return false;
                         }
                     }
@@ -375,8 +372,8 @@ public class Board extends Observable implements Observer {
             }
             else if((row == selectedRow - dg2Sum) && (column == selectedColumn +dg2Sum)){
                 for(int i=1;i<dg2Sum;i++){
-                    if(!isEmpty(selectedRow-i,selectedColumn+i)){
-                        if(getPiece(selectedRow,selectedColumn).withHuman != getPiece(selectedRow-i,selectedColumn+i).withHuman){
+                    if(!isEmpty(state, selectedRow-i,selectedColumn+i)){
+                        if(state[selectedRow][selectedColumn] != state[selectedRow-i][selectedColumn+i]){
                             return false;
                         }
                     }
@@ -388,7 +385,103 @@ public class Board extends Observable implements Observer {
         return false;
     }
 
+    public ArrayList<int[]> getValidAction(int state[][],int row,int column){
+        ArrayList<int[]> action = new ArrayList<int[]>();
+        int rowSum = rowSum(state,row,column);
+        int colSum = colSum(state,row,column);
+        int dg1Sum = dg1Sum(state,row,column);
+        int dg2Sum = dg2Sum(state,row,column);
+        int move[] = new int[2]; // to store action's row,column
+        //moving up
+        if(isValidMove(state,row,column,row+colSum,column)){
+            move[0] = row+colSum;
+            move[1] = column;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //down
+        if(isValidMove(state,row,column,row-colSum,column)){
+            move[0] = row-colSum;
+            move[1] = column;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving right
+        if(isValidMove(state,row,column,row,column+rowSum)){
+            move[0] = row;
+            move[1] = column+rowSum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        // moving left
+        if(isValidMove(state,row,column,row,column-rowSum)){
+            move[0] = row;
+            move[1] = column-rowSum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving right up
+        if(isValidMove(state,row,column,row+dg1Sum,column+dg1Sum)){
+            move[0] = row+dg1Sum;
+            move[1] = column+dg1Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //left down
+        if(isValidMove(state,row,column,row-dg1Sum,column-dg1Sum)){
+            move[0] = row-dg1Sum;
+            move[1] = column-dg1Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        //moving left up
+        if(isValidMove(state,row,column,row-dg2Sum,column+dg2Sum)){
+            move[0] = row-dg2Sum;
+            move[1] = column+dg2Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
+        move = new int[2];
+        // moving left
+        if(isValidMove(state,row,column,row+dg2Sum,column-dg2Sum)){
+            move[0] = row+dg2Sum;
+            move[1] = column-dg2Sum;
+        }
+        else{
+            move[0] = -1;
+            move[1] = -1;
+        }
+        action.add(move);
 
+        return action;
+    }
 
     // function to update action of piece after every move
     public void updatePiecesActions(int state[][]){
