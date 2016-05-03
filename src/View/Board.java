@@ -8,6 +8,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**
@@ -29,7 +30,7 @@ public class Board extends Observable implements Observer {
     private JPanel display;
     protected boolean panelHasBeenResized = false;
 
-    public Piece redPiece[] = new RoundPiece[6];
+    public Piece whitePiece[] = new RoundPiece[6];
     public Piece blackPiece[] = new RoundPiece[6];
     public Piece highlight[];
 
@@ -385,6 +386,213 @@ public class Board extends Observable implements Observer {
         return false;
     }
 
+    public boolean isWinner(int state[][],int id){
+        Set<int[]> connectedComponent = new HashSet<>();
+        int r=0;
+        int c = 0;
+        outerloop:
+        for(r=0;r<rows;r++){
+            for(c = 0;c<rows;c++){
+                if(state[r][c] == id){
+                    break outerloop;
+                }
+            }
+        }
+        int pieceCount = getcount(state,id);
+        //checking if there is olny one key left
+        if(pieceCount ==1){
+            return true;
+        }
+        try{
+            findAllContiguous(state,r,c,connectedComponent,id);
+        }
+        catch (Exception e){
+            System.out.print(state);
+            return false;
+        }
+        return connectedComponent.size() == pieceCount;
+    }
+
+    private int getcount(int[][] state, int id) {
+        int c =0;
+        for(int i=0;i<rows;i++){
+            for(int j = 0;j<rows;j++){
+                if(state[i][j] == id){
+                    c++;
+                }
+            }
+        }
+        return c;
+    }
+
+    void findAllContiguous(int state[][],int r,int c,Set<int[]> found, int id){
+
+        int start[] = {r,c};
+        if (!contains(found,start)) {
+            found.add(start);
+            for (Iterator<int[]> itr
+                 = findAdjacent(state,r, c, id).iterator(); itr.hasNext();) {
+                int[] next = itr.next();
+                findAllContiguous(state,next[0], next[1], found,id);
+            }
+        }
+    }
+
+    /** Return true if SET contains PAIR. */
+    static boolean contains(Set<int[]> set, int[] pair) {
+        for (Iterator<int[]> itr = set.iterator(); itr.hasNext();) {
+            int[] next = itr.next();
+            if (next[0] == pair[0] && next[1] == pair[1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Return true if the piece at _pieces[R][C] of THIS has
+     * adjacent PIECE of the same side. */
+
+    Set<int[]> findAdjacent(int s[][],int r, int c,int id) {
+        int state[][] = new int[5][5];
+        state = s.clone();
+        Set<int[]> result = new HashSet<int[]>();
+        if (r == 0 && c == 0) {
+            if(state[0][1] == id){
+                result.add(new int[]{0,1});
+            }
+            if(state[1][1] == id){
+                result.add(new int[]{1,1});
+            }
+            if(state[1][0] == id){
+                result.add(new int[]{1,0});
+            }
+        } else if (r == 0 && c == rows-1) {
+            if(state[0][rows-2] == id){
+                result.add(new int[]{0,rows-2});
+            }
+            if(state[1][rows-2] == id){
+                result.add(new int[]{1,rows-2});
+            }
+            if(state[1][rows-1] == id){
+                result.add(new int[]{1,rows-1});
+            }
+        } else if (r == rows-1 && c == 0) {
+            if(state[rows-2][0] == id){
+                result.add(new int[]{rows-2,0});
+            }
+            if(state[rows-1][1] == id){
+                result.add(new int[]{rows-1,1});
+            }
+            if(state[rows-2][1] == id){
+                result.add(new int[]{rows-2,1});
+            }
+        } else if (r == 4 && c == 4) {
+            if(state[rows-1][rows-2] == id){
+                result.add(new int[]{rows-1,rows-2});
+            }
+            if(state[rows-2][rows-2] == id){
+                result.add(new int[]{rows-2,rows-2});
+            }
+            if(state[rows-2][rows-1] == id){
+                result.add(new int[]{rows-2,rows-1});
+            }
+        } else if (r == 0) {
+            if(state[0][c-1] == id){
+                result.add(new int[]{0,c-1});
+            }
+            if(state[0][c+1] == id){
+                result.add(new int[]{0,c+1});
+            }
+            if(state[1][c-1] == id){
+                result.add(new int[]{1,c-1});
+            }
+            if(state[1][c+1] == id){
+                result.add(new int[]{1,c+1});
+            }
+            if(state[1][c] == id){
+                result.add(new int[]{1,c});
+            }
+
+        } else if (r == 4) {
+            if(state[4][c-1] == id){
+                result.add(new int[]{4,c-1});
+            }
+            if(state[4][c+1] == id){
+                result.add(new int[]{4,c+1});
+            }
+            if(state[3][c-1] == id){
+                result.add(new int[]{3,c-1});
+            }
+            if(state[3][c+1] == id){
+                result.add(new int[]{3,c+1});
+            }
+            if(state[3][c] == id){
+                result.add(new int[]{3,c});
+            }
+
+        } else if (c == 0) {
+            if(state[r-1][0] == id){
+                result.add(new int[]{r-1,0});
+            }
+            if(state[r+1][0] == id){
+                result.add(new int[]{r+1,0});
+            }
+            if(state[r-1][1] == id){
+                result.add(new int[]{r-1,1});
+            }
+            if(state[r+1][1] == id){
+                result.add(new int[]{r+1,1});
+            }
+            if(state[r][1] == id){
+                result.add(new int[]{r,1});
+            }
+
+        } else if (c == 4) {
+            if(state[r-1][4] == id){
+                result.add(new int[]{r-1,4});
+            }
+            if(state[r+1][4] == id){
+                result.add(new int[]{r+1,4});
+            }
+            if(state[r-1][3] == id){
+                result.add(new int[]{r-1,3});
+            }
+            if(state[r+1][3] == id){
+                result.add(new int[]{r+1,3});
+            }
+            if(state[r][3] == id){
+                result.add(new int[]{r,3});
+            }
+        } else {
+            if(state[r-1][c-1] == id){
+                result.add(new int[]{r-1,c-1});
+            }
+            if(state[r-1][c] == id){
+                result.add(new int[]{r-1,c});
+            }
+            if(state[r-1][c+1] == id){
+                result.add(new int[]{r-1,c+1});
+            }
+            if(state[r-1][c-1] == id){
+                result.add(new int[]{r-1,c-1});
+            }
+            if(state[r][c+1] == id){
+                result.add(new int[]{r,c+1});
+            }
+            if(state[r+1][c-1] == id){
+                result.add(new int[]{r+1,c-1});
+            }
+            if(state[r+1][c] == id){
+                result.add(new int[]{r+1,c});
+            }
+            if(state[r+1][c+1] == id){
+                result.add(new int[]{r+1,c+1});
+            }
+
+        }
+        return result;
+    }
+
     public ArrayList<int[]> getValidAction(int state[][],int row,int column){
         ArrayList<int[]> action = new ArrayList<int[]>();
         int rowSum = rowSum(state,row,column);
@@ -485,11 +693,11 @@ public class Board extends Observable implements Observer {
 
     // function to update action of piece after every move
     public void updatePiecesActions(int state[][]){
-        for(int i=0;i<redPiece.length;i++){
-            if(redPiece[i].getRow()<0){
+        for(int i = 0; i< whitePiece.length; i++){
+            if(whitePiece[i].getRow()<0){
                 continue;
             }
-            redPiece[i].updateAction(state);
+            whitePiece[i].updateAction(state);
         }
         for(int i=0;i<blackPiece.length;i++){
             if(blackPiece[i].getRow()<0){
@@ -614,7 +822,7 @@ public class Board extends Observable implements Observer {
         int width = display.getWidth();
         int x, y;
         Color oldColor = g.getColor();
-        Color backgroundColor = Color.white;
+        Color backgroundColor = Color.gray;
         Color lineColor = new Color(192, 192, 255);
 
         // Fill background with solid color

@@ -79,7 +79,7 @@ public class LineOfAction extends JFrame{
      */
     private void installQuitButton() {
         // Install Quit button
-        quitButton = new JButton("Quit");
+        quitButton = new JButton("Play");
         buttonPanel.add(quitButton);
         quitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -113,16 +113,16 @@ public class LineOfAction extends JFrame{
                 {0,1,1,1,0}
         };
         for(int i = 0;i<6;i++){
-            board.redPiece[i] = new RoundPiece();
+            board.whitePiece[i] = new RoundPiece();
             board.blackPiece[i] = new RoundPiece(Color.black);
         }
-        //placing red piece
-        board.place(board.redPiece[0], 1, 0);
-        board.place(board.redPiece[1], 2, 0);
-        board.place(board.redPiece[2], 3, 0);
-        board.place(board.redPiece[3], 1, 4);
-        board.place(board.redPiece[4], 2, 4);
-        board.place(board.redPiece[5], 3, 4);
+        //placing white piece
+        board.place(board.whitePiece[0], 1, 0);
+        board.place(board.whitePiece[1], 2, 0);
+        board.place(board.whitePiece[2], 3, 0);
+        board.place(board.whitePiece[3], 1, 4);
+        board.place(board.whitePiece[4], 2, 4);
+        board.place(board.whitePiece[5], 3, 4);
 
         //placing ai piece
         board.place(board.blackPiece[0], 0, 1);
@@ -135,23 +135,23 @@ public class LineOfAction extends JFrame{
         //assigning pieces to player
         if(colorBlack){
             human = new Player(true,board.blackPiece,colorBlack);
-            ai = new Player(false,board.redPiece,colorBlack);
+            ai = new Player(false,board.whitePiece,colorBlack);
             human.addPieces(board.blackPiece);
-            ai.addPieces(board.redPiece);
+            ai.addPieces(board.whitePiece);
         }
 
         else{
-            human = new Player(true,board.redPiece,colorBlack);
+            human = new Player(true,board.whitePiece,colorBlack);
             ai = new Player(false,board.blackPiece,colorBlack);
-            human.addPieces(board.redPiece);
+            human.addPieces(board.whitePiece);
             ai.addPieces(board.blackPiece);
         }
-       board.updatePiecesActions(board.state);
+        board.updatePiecesActions(board.state);
         if(colorBlack){
             playHuman();
         }
         else{
-           // playAI();
+            // playAI();
             //updating states
             board.updatePiecesActions(board.state);
         }
@@ -191,6 +191,10 @@ public class LineOfAction extends JFrame{
                             if(board.isValidMove(board.state,selectedRow,selectedColumn,newRow,newColumn)){
                                 removeHighlight();
                                 makeMove(humanPlayerTurn,newRow,newColumn,board.getPiece(selectedRow,selectedColumn));
+                                board.updatePiecesActions(board.state);
+                                if(board.isWinner(board.state,human.getId())){
+                                    System.exit(0);
+                                }
                                 humanPlayerTurn = false;
                                 clickCount = 0;
                                 savelastSate(board.state);
@@ -245,6 +249,7 @@ public class LineOfAction extends JFrame{
         board.state[piece.getRow()][piece.getColumn()] = 0;
         piece.moveTo(newRow,newColumn);
         board.updatePiecesActions(board.state);
+
     }
 
     private void removeHighlight() {
@@ -256,16 +261,20 @@ public class LineOfAction extends JFrame{
     private void playAI() {
         savelastSate(board.state);
         aiFunctions = new AIFunctions(board.state,ai,human);
-        int moves[] = aiFunctions.nexBestMove();
+        int moves[] = aiFunctions.nexBestMove(board.state);
         getLastState(laststate);
         board.updatePiecesActions(board.state);
-        //need to determine i and j such that ai moves i-th piece with j-th action
         int i = moves[0];
-        int column = moves[3];
         int j = moves[1];
-        Piece piece = board.getPiece(i,column);
-        if(piece.action.get(j)[0]>=0){
-            makeMove(humanPlayerTurn,piece.action.get(j)[0],piece.action.get(j)[1],piece);
+        int newRow = moves[2];
+        int newColumn = moves[3];
+        Piece piece = board.getPiece(i,j);
+        if(newRow>=0){
+            makeMove(humanPlayerTurn,newRow,newColumn,piece);
+        }
+        if(board.isWinner(board.state,ai.getId())){
+            System.out.println("AI won");
+            System.exit(0);
         }
         humanPlayerTurn = true;
     }
