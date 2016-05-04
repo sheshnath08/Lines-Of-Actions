@@ -2,15 +2,13 @@ package AI;
 
 import View.*;
 import com.sun.rowset.internal.Row;
+import javafx.scene.layout.Border;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Random;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  *
@@ -20,8 +18,10 @@ import javax.swing.JPanel;
 public class LineOfAction extends JFrame{
     Board board;
     JPanel buttonPanel;
+    JPanel resultJPanel;
     JPanel display;
     JButton quitButton;
+    JLabel resultLabel;
     LineOfAction self;
     AIFunctions aiFunctions;
     final int ROWS = 5;
@@ -55,12 +55,19 @@ public class LineOfAction extends JFrame{
         // Create a Board (a kind of JPanel) and add it to this Frame.
         board = new Board(ROWS, COLUMNS);
         display = board.getJPanel();
-
+        resultJPanel = new JPanel();
+        resultJPanel.setVisible(false);
+        resultLabel = new JLabel();
+        resultJPanel.add(resultLabel);
+        resultJPanel.setBackground(Color.RED);
+        resultJPanel.setForeground(Color.LIGHT_GRAY);
+        resultJPanel.setBounds(150,150,200,200);
         getContentPane().add(display, BorderLayout.CENTER);
 
         // Install button panel
         buttonPanel = new JPanel();
         getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+        getContentPane().add(resultJPanel, BorderLayout.NORTH);
 
         installQuitButton();
         implementCloseBox();
@@ -112,10 +119,35 @@ public class LineOfAction extends JFrame{
                 {-1,0,0,0,-1},
                 {0,1,1,1,0}
         };
+
+        /*board.state = new int[][]{
+                {0,1,1,1,0},
+                {-1,1,0,0,-0},
+                {-1,0,1,0,-1},
+                {-1,0,0,0,-1},
+                {0,0,0,1,0}
+        };*/
         for(int i = 0;i<6;i++){
-            board.whitePiece[i] = new RoundPiece();
+            board.whitePiece[i] = new RoundPiece(Color.WHITE);
             board.blackPiece[i] = new RoundPiece(Color.black);
         }
+
+
+       /* board.place(board.whitePiece[0], 1, 0);
+        board.place(board.whitePiece[1], 2, 0);
+        board.place(board.whitePiece[2], 3, 0);
+        board.place(board.whitePiece[4], 2, 4);
+        board.place(board.whitePiece[5], 3, 4);
+
+        //placing ai piece
+        board.place(board.blackPiece[0], 0, 1);
+        board.place(board.blackPiece[1], 0, 2);
+        board.place(board.blackPiece[2], 0, 3);
+        board.place(board.blackPiece[3], 1, 1);
+        board.place(board.blackPiece[4], 2, 2);
+        board.place(board.blackPiece[5], 4, 3);*/
+
+
         //placing white piece
         board.place(board.whitePiece[0], 1, 0);
         board.place(board.whitePiece[1], 2, 0);
@@ -156,6 +188,7 @@ public class LineOfAction extends JFrame{
             board.updatePiecesActions(board.state);
         }
 
+
     }
 
 
@@ -192,9 +225,7 @@ public class LineOfAction extends JFrame{
                                 removeHighlight();
                                 makeMove(humanPlayerTurn,newRow,newColumn,board.getPiece(selectedRow,selectedColumn));
                                 board.updatePiecesActions(board.state);
-                                if(board.isWinner(board.state,human.getId())){
-                                    System.exit(0);
-                                }
+                                checkWin();
                                 humanPlayerTurn = false;
                                 clickCount = 0;
                                 savelastSate(board.state);
@@ -261,21 +292,24 @@ public class LineOfAction extends JFrame{
     private void playAI() {
         savelastSate(board.state);
         aiFunctions = new AIFunctions(board.state,ai,human);
-        int moves[] = aiFunctions.nexBestMove(board.state);
+        long starttime = System.currentTimeMillis();
+        ArrayList<int []> bestmoves = new ArrayList<>();
+        int moves[] = aiFunctions.alphaBetaSearh(board.state);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Time Taken: "+(endTime - starttime)/1000);
         getLastState(laststate);
         board.updatePiecesActions(board.state);
         int i = moves[0];
         int j = moves[1];
         int newRow = moves[2];
         int newColumn = moves[3];
+        System.out.println("Moved from "+i +","+j+"to "+ newRow +", "+newColumn);
         Piece piece = board.getPiece(i,j);
         if(newRow>=0){
             makeMove(humanPlayerTurn,newRow,newColumn,piece);
         }
-        if(board.isWinner(board.state,ai.getId())){
-            System.out.println("AI won");
-            System.exit(0);
-        }
+        board.updatePiecesActions(board.state);
+        checkWin();
         humanPlayerTurn = true;
     }
 
@@ -299,6 +333,23 @@ public class LineOfAction extends JFrame{
             }
         }
 
+    }
+
+    private void checkWin(){
+        if(board.isWinner(board.state,ai.getId())){
+            resultLabel.setText("You Lost");
+            resultJPanel.setBackground(Color.red);
+            resultJPanel.setVisible(true);
+            System.out.println("You lost");
+            // System.exit(0);
+        }
+        if(board.isWinner(board.state,human.getId())){
+            resultLabel.setText("You Won");
+            resultJPanel.setBackground(Color.green);
+            resultJPanel.setVisible(true);
+            System.out.println("You Won");
+            // System.exit(0);
+        }
     }
 
 }

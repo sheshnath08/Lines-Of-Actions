@@ -21,25 +21,60 @@ public class AIFunctions {
     int minUtility = -100;
     Board newboard;
     int nodesCount = 0;
+    int maxt = 0;
     public AIFunctions(int state[][],Player ai, Player human){
         this.ai = new Player(false,ai.getPiece(),ai.getColor());
         this.human = new Player(true,human.getPiece(),human.getColor());
         newboard = new Board(5,5);
     }
-    int[] nexBestMove(int state[][]){
-        return alphaBetaSearh(state);
-    }
 
     int[] alphaBetaSearh(int state[][]){
         int moves[] = new int[5];
-         maxValue(state,minUtility,maxUtility,0,moves);
+        moves = minMax(state,minUtility,maxUtility,0,moves);
         System.out.println("Nodes Count:"+nodesCount);
+        System.out.println("Max ut: "+maxt);
         this.nodesCount = 0;
         return moves;
     }
 
+    int[] minMax(int state[][],int a,int b,int depth,int moves[]){
+        int localState[][] = new int[5][5];
+        boolean found = false;
+        for(int i=0;i<5;i++){
+            for (int j = 0;j<5;j++){
+                localState[i][j] = state[i][j];
+            }
+        }
+        ArrayList<int[]> actions = new ArrayList<>();
+        actions.addAll(getAllValidAction(localState,ai.getId()));
+        int v = -100000;
+        for(int i=0;i<actions.size();i++){
+            int row = actions.get(i)[0];
+            int column = actions.get(i)[1];
+            int newRow = actions.get(i)[2];
+            int newColumn = actions.get(i)[3];
+            v = max(v,minValue(result(state,row,column,newRow,newColumn),a,b,depth+1,moves)[4]);
+            this.nodesCount++;
+            a = max(a,v);
+            if(v>=b){
+                found = true;
+                moves[0] = row;
+                moves[1] = column;
+                moves[2]=newRow;
+                moves[3]=newColumn;
+                moves[4] = v;
+                return moves;
+            }
+        }
+        if(!found){
+            moves = actions.get(0);
+        }
+        return moves;
+    }
+
     int[] maxValue(int state[][],int a,int b,int depth,int moves[]){
-        //int moves[] = new int[5];
+        int alpha =a;
+        int beta = b;
         int localState[][] = new int[5][5];
         for(int i=0;i<5;i++){
             for (int j = 0;j<5;j++){
@@ -47,18 +82,17 @@ public class AIFunctions {
             }
         }
         if(terminalTest(localState,human.getId())){
-            moves[4]= -100;
-            System.out.println("depth humanwin:"+depth);
+            moves[4]= minUtility;
+            //System.out.println("depth humanwin:"+depth);
             return moves;
-            //return stateUtility(state);
         }
         if(terminalTest(localState,ai.getId())){
-           System.out.println("depth aiwin:"+depth);
-            moves[4] = 100;;
+            if(maxt<evaluationFunction(localState)){
+                maxt =(int)evaluationFunction(localState);
+            }
+            moves[4] = maxUtility;
             return moves;
         }
-        int alpha =a;
-        int beta = b;
         ArrayList<int[]> actions = new ArrayList<>();
         actions.addAll(getAllValidAction(localState,ai.getId()));
         int v = -100000;
@@ -71,10 +105,6 @@ public class AIFunctions {
             this.nodesCount++;
             a = max(a,v);
             if(v>=b){
-                moves[0] = row;
-                moves[1] = column;
-                moves[2]=newRow;
-                moves[3]=newColumn;
                 moves[4] = v;
                 return moves;
             }
@@ -84,33 +114,27 @@ public class AIFunctions {
 
     int[] minValue(int state[][],int a,int b,int depth,int moves[]){
         //int moves[] = new int[5];
+        int alpha =a;
+        int beta = b;
         int localState[][] = new int[5][5];
-        int alpha;
-        int beta;
         for(int i=0;i<5;i++){
             for (int j = 0;j<5;j++){
                 localState[i][j] = state[i][j];
             }
         }
         if(terminalTest(localState,human.getId())){
-            moves[4]= -100;
-            //System.out.println("depth humanwin:"+depth);
+            //System.out.println("Human Win " + evaluationFunction(localState));
+            moves[4]= minUtility;
             return moves;
-            //return stateUtility(state);
         }
         if(terminalTest(localState,ai.getId())){
-            moves[4] = 100;
-            //System.out.println("depth aiwin:"+depth);
+            moves[4] = maxUtility;
             return moves;
         }
-
-        if(depth>= 6){
+        if(depth>= 8){
             moves[4] = (int)evaluationFunction(localState);
             return moves;
         }
-
-        alpha = a;
-        beta = b;
         ArrayList<int[]> actions = new ArrayList<>();
         actions.addAll(getAllValidAction(localState,human.getId()));
         int v = 100000;
@@ -123,10 +147,6 @@ public class AIFunctions {
             this.nodesCount++;
             b = min(b,v);
             if(v<=a){
-                moves[0] = row;
-                moves[1] = column;
-                moves[2]=newRow;
-                moves[3]=newColumn;
                 moves[4] = v;
                 return moves;
             }
@@ -152,9 +172,9 @@ public class AIFunctions {
 
 
     /*** measures the aggregate distance between all pieces
-    * @param pieces the pieces to measure
-    * @return
-            */
+     * @param pieces the pieces to measure
+     * @return
+     */
     private double getDistanceBetweenPieces(ArrayList<int[]> pieces){
         double runningSum = 0;
         for(int i = 0; i < pieces.size();i++){

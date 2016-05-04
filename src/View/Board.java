@@ -8,7 +8,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**
@@ -88,18 +87,6 @@ public class Board extends Observable implements Observer {
 
     /**
      * Returns the topmost piece at the given row and column in this Board, or
-     * null if the given location is empty.
-     * 
-     * @param row
-     *        The row number.
-     * @param column
-     *        The column number.
-     * @return The <code>Piece</code> in the given [row][column], or
-     *         <code>null</code> if that location is empty. If the board
-     *         location contains more than one piece, the "topmost" piece is
-     *         returned.
-     * @throws ArrayIndexOutOfBoundsException
-     *         If the specified location does not exist.
      */
     public Piece getPiece(int row, int column) {
         if (board[row][column].isEmpty()) {
@@ -823,7 +810,7 @@ public class Board extends Observable implements Observer {
         int x, y;
         Color oldColor = g.getColor();
         Color backgroundColor = Color.gray;
-        Color lineColor = new Color(192, 192, 255);
+        Color lineColor = new Color(132, 126, 255);
 
         // Fill background with solid color
         g.setColor(backgroundColor);
