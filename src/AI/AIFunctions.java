@@ -11,6 +11,7 @@ import static java.lang.Math.min;
 /**
  * Created by sheshnath on 4/6/2016.
  */
+
 public class AIFunctions {
     /*
     returns piece number to move to a valid location.
@@ -22,21 +23,30 @@ public class AIFunctions {
     Board newboard;
     int nodesCount = 0;
     int maxt = 0;
+    int depthLimit = 9;
+    int depthCount;
+
     public AIFunctions(int state[][],Player ai, Player human){
         this.ai = new Player(false,ai.getPiece(),ai.getColor());
         this.human = new Player(true,human.getPiece(),human.getColor());
         newboard = new Board(5,5);
+        this.nodesCount = 0;
+        this.depthCount = 0;
     }
 
+    /*
+    * Alpha-Beta pruning algorithm*/
     int[] alphaBetaSearh(int state[][]){
         int moves[] = new int[5];
         moves = minMax(state,minUtility,maxUtility,0,moves);
         System.out.println("Nodes Count:"+nodesCount);
+        System.out.println("Depth Count:"+depthCount);
         System.out.println("Max ut: "+maxt);
-        this.nodesCount = 0;
         return moves;
     }
 
+    /*
+    * Min-max Algorithm*/
     int[] minMax(int state[][],int a,int b,int depth,int moves[]){
         int localState[][] = new int[5][5];
         boolean found = false;
@@ -56,6 +66,7 @@ public class AIFunctions {
             v = max(v,minValue(result(state,row,column,newRow,newColumn),a,b,depth+1,moves)[4]);
             this.nodesCount++;
             a = max(a,v);
+           // elapsedTime = (System.nanoTime() -startTime)/100;
             if(v>=b){
                 found = true;
                 moves[0] = row;
@@ -67,25 +78,27 @@ public class AIFunctions {
             }
         }
         if(!found){
-            moves = actions.get(0);
+            moves = actions.get(actions.size()-2);
         }
         return moves;
     }
 
     int[] maxValue(int state[][],int a,int b,int depth,int moves[]){
-        int alpha =a;
-        int beta = b;
+        if(depth>depthCount){
+            depthCount= depth;
+        }
         int localState[][] = new int[5][5];
         for(int i=0;i<5;i++){
             for (int j = 0;j<5;j++){
                 localState[i][j] = state[i][j];
             }
         }
+        //checking is minplayer wins
         if(terminalTest(localState,human.getId())){
             moves[4]= minUtility;
-            //System.out.println("depth humanwin:"+depth);
             return moves;
         }
+        //checking if maxplayer wins
         if(terminalTest(localState,ai.getId())){
             if(maxt<evaluationFunction(localState)){
                 maxt =(int)evaluationFunction(localState);
@@ -94,6 +107,7 @@ public class AIFunctions {
             return moves;
         }
         ArrayList<int[]> actions = new ArrayList<>();
+        /*adding all valid actions at localstate*/
         actions.addAll(getAllValidAction(localState,ai.getId()));
         int v = -100000;
         for(int i=0;i<actions.size();i++){
@@ -101,7 +115,7 @@ public class AIFunctions {
             int column = actions.get(i)[1];
             int newRow = actions.get(i)[2];
             int newColumn = actions.get(i)[3];
-            v = max(v,minValue(result(state,row,column,newRow,newColumn),alpha,beta,depth+1,moves)[4]);
+            v = max(v,minValue(result(state,row,column,newRow,newColumn),a,b,depth+1,moves)[4]);
             this.nodesCount++;
             a = max(a,v);
             if(v>=b){
@@ -113,9 +127,9 @@ public class AIFunctions {
     }
 
     int[] minValue(int state[][],int a,int b,int depth,int moves[]){
-        //int moves[] = new int[5];
-        int alpha =a;
-        int beta = b;
+        if(depth>depthCount){
+            depthCount= depth;
+        }
         int localState[][] = new int[5][5];
         for(int i=0;i<5;i++){
             for (int j = 0;j<5;j++){
@@ -123,7 +137,6 @@ public class AIFunctions {
             }
         }
         if(terminalTest(localState,human.getId())){
-            //System.out.println("Human Win " + evaluationFunction(localState));
             moves[4]= minUtility;
             return moves;
         }
@@ -131,7 +144,7 @@ public class AIFunctions {
             moves[4] = maxUtility;
             return moves;
         }
-        if(depth>= 8){
+        if(depth>= depthLimit){
             moves[4] = (int)evaluationFunction(localState);
             return moves;
         }
@@ -143,7 +156,7 @@ public class AIFunctions {
             int column = actions.get(i)[1];
             int newRow = actions.get(i)[2];
             int newColumn = actions.get(i)[3];
-            v = min(v,maxValue(result(state,row,column,newRow,newColumn),alpha,beta,depth+1,moves)[4]);
+            v = min(v,maxValue(result(state,row,column,newRow,newColumn),a,b,depth+1,moves)[4]);
             this.nodesCount++;
             b = min(b,v);
             if(v<=a){
@@ -154,6 +167,10 @@ public class AIFunctions {
         return moves;
     }
 
+    /*
+    evaluation function that takes input state.
+    Calculate sum of eculidian distance of each piece with other of a player and return diff minPlayersum-maxPlayersum
+    * */
     private double evaluationFunction(int[][] state) {
         int localState[][] = new int[5][5];
         for(int i=0;i<5;i++){
@@ -171,10 +188,7 @@ public class AIFunctions {
     }
 
 
-    /*** measures the aggregate distance between all pieces
-     * @param pieces the pieces to measure
-     * @return
-     */
+    /* measures the aggregate distance between all pieces*/
     private double getDistanceBetweenPieces(ArrayList<int[]> pieces){
         double runningSum = 0;
         for(int i = 0; i < pieces.size();i++){
@@ -187,10 +201,7 @@ public class AIFunctions {
 
     /**
      * calculates the distance between 2 Pieces
-     * @param one
-     * @param two
-     * @return
-     */
+     * */
     private double calcDistanceBetweenPieces(int[] one, int[] two){
         int xSq = (int) Math.pow(one[0]-two[0],2);
         int YSq = (int) Math.pow(one[1]-two[1],2);
@@ -198,7 +209,7 @@ public class AIFunctions {
     }
 
 
-    // this method to get all the pieces on perticular state
+   /* this method to get all the pieces on perticular state*/
     private ArrayList<int[]> getPiecesLocation(int[][] state,int id) {
         ArrayList<int[]>pieces = new ArrayList<>();
         for(int i=0;i< 5;i++)//modify i<5 for 6X6
@@ -222,11 +233,7 @@ public class AIFunctions {
         return false;
     }
 
-    int stateUtility(int state[][], Player player){
-        return 100;
-    }
-
-    //returns new state after performing action
+    /*returns new state after performing action*/
     int[][] result(int state[][],int row,int column, int newRow,int newColumn){
         //write condition to check for capturing key
         int result[][] = new int[5][5];
@@ -245,6 +252,7 @@ public class AIFunctions {
         return result;
     }
 
+    /*Returns an ArrayList containg [row,column] of all valid actions from state for player with id*/
     ArrayList<int[]> getAllValidAction(int state[][],int id){
         ArrayList<int[]> action = new ArrayList<>();
         ArrayList<int[]>pieces = new ArrayList<>();

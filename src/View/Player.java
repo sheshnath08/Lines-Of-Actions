@@ -19,11 +19,11 @@ public class Player {
         this.isBlack = isBlack;
         this.pieceVector = new Vector(pieceVector.length);
         key = pieceVector.length;
-        if(this.human){
+        if(this.isBlack){
           this.id = 1;  //if player chose black color
         }
         else{
-            this.id = -1; //if player chose red color
+            this.id = -1; //if player chose white color
         }
     }
     //adding piece to player while initializing board

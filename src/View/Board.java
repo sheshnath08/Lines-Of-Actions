@@ -373,6 +373,7 @@ public class Board extends Observable implements Observer {
         return false;
     }
 
+
     public boolean isWinner(int state[][],int id){
         Set<int[]> connectedComponent = new HashSet<>();
         int r=0;
@@ -560,8 +561,8 @@ public class Board extends Observable implements Observer {
             if(state[r-1][c+1] == id){
                 result.add(new int[]{r-1,c+1});
             }
-            if(state[r-1][c-1] == id){
-                result.add(new int[]{r-1,c-1});
+            if(state[r][c-1] == id){
+                result.add(new int[]{r,c-1});
             }
             if(state[r][c+1] == id){
                 result.add(new int[]{r,c+1});
@@ -579,6 +580,7 @@ public class Board extends Observable implements Observer {
         }
         return result;
     }
+
 
     public ArrayList<int[]> getValidAction(int state[][],int row,int column){
         ArrayList<int[]> action = new ArrayList<int[]>();
