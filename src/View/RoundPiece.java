@@ -1,7 +1,5 @@
 package View;
 
-import AI.LineOfAction;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -18,9 +16,7 @@ public class RoundPiece extends Piece {
     }
     
     /**
-     * Constructs a <code>RoundPiece</code> of the given color.
-     * 
-     * @param color The <code>Color</code> of the new piece.
+     * Constructs a RoundPiece of the given color.
      **/
     public RoundPiece(Color color) {
         this.color = color;
@@ -29,9 +25,7 @@ public class RoundPiece extends Piece {
     /**
      * Draws this <code>RoundPiece</code> on the given <code>Graphics</code>.
      * Drawing should be limited to the provided <code>java.awt.Rectangle</code>.
-     * 
-     * @param g The graphics on which to draw.
-     * @param r The rectangle in which to draw.
+     *
      */
     public void paint(Graphics g, Rectangle r) {
         Color oldColor = g.getColor();

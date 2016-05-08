@@ -56,11 +56,9 @@ public class Player {
         }
     }
 
+    /*returns array of all the pieces that player has*/
     public Piece[] getPiece(){
         return piece;
-    }
-    public Vector<Piece> getPieceVector() {
-        return pieceVector;
     }
 
     //remove piece when other player captures the piece
@@ -74,16 +72,5 @@ public class Player {
         return remove;
     }
 
-    public Piece getPieceAt(int row,int column){
-        Piece piece = null;
-        for(int i=0;i<pieceVector.size();i++){
-            piece = pieceVector.get(i);
-            if(piece.getRow() == row && piece.getColumn() == column){
-                return piece;
-            }
-        }
-        piece = null;
-        return piece;
-    }
 
 }

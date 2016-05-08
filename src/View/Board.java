@@ -86,7 +86,7 @@ public class Board extends Observable implements Observer {
     }
 
     /**
-     * Returns the topmost piece at the given row and column in this Board, or
+     * Returns the piece at the given row and column in this Board, or
      */
     public Piece getPiece(int row, int column) {
         if (board[row][column].isEmpty()) {
@@ -96,13 +96,6 @@ public class Board extends Observable implements Observer {
     }
 
 
-    public Stack getPieces(int row, int column) {
-        Stack pieces = new Stack();
-        for (Iterator iter = board[row][column].iterator(); iter.hasNext();) {
-            pieces.push(iter.next());
-        }
-        return pieces;
-    }
     
     /**
      * Returns <code>true</code> if the given row and column on this board
@@ -132,11 +125,7 @@ public class Board extends Observable implements Observer {
     }
 
     /**
-     * Given a y coordinate, determines which row it is in.
-     * 
-     * @param y
-     *        A local y coordinate.
-     * @return The number of the row containing the given y coordinate.
+     * Given a y coordinate, determines which row it is in..
      */
     public int yToRow(int y) {
         return Math.min(rows - 1, (y * rows) / display.getHeight());
@@ -154,10 +143,6 @@ public class Board extends Observable implements Observer {
     /**
      * Returns the Y coordinate of the top side of cells in the given column of
      * this Board.
-     * 
-     * @param rowNumber
-     *        A row number.
-     * @return The Y coordinate of the top side of that row.
      */
     protected int rowToY(int rowNumber) {
         return (rowNumber * (display.getHeight() - 1)) / rows;
@@ -206,6 +191,7 @@ public class Board extends Observable implements Observer {
     Methods to find row-sum, col-sum and diagonal sum
      */
 
+    /*Returns row sum of pieces*/
     public int rowSum(int state[][],int selectedRow, int selectedColumn){
 
         int rowSum=0;
@@ -215,6 +201,7 @@ public class Board extends Observable implements Observer {
         return rowSum;
     }
 
+    /*Return columns sum of pieces*/
     public int colSum(int state[][],int selectedRow,int selectedColumn){
         int colSum=0;
         for(int i = 0 ;i<rows;i++){
@@ -223,6 +210,7 @@ public class Board extends Observable implements Observer {
         return colSum;
     }
 
+    /*Retunrs sum of pieces that are present in upper diagonal*/
     public int dg1Sum(int state[][],int selectedRow,int selectedColumn){
         int dg1Sum = 0;
         dg1Sum = dg1Sum + Math.abs(state[selectedRow][selectedColumn]);
@@ -237,6 +225,7 @@ public class Board extends Observable implements Observer {
         return dg1Sum;
     }
 
+    /*retunrs sum of pieces that are present in lower diagonal*/
     public int dg2Sum(int state[][],int selectedRow,int selectedColumn){
         int dg2Sum = 0;
         dg2Sum = dg2Sum + Math.abs(state[selectedRow][selectedColumn]);
@@ -374,6 +363,7 @@ public class Board extends Observable implements Observer {
     }
 
 
+    /*returns true if player with id wins*/
     public boolean isWinner(int state[][],int id){
         Set<int[]> connectedComponent = new HashSet<>();
         int r=0;
@@ -401,6 +391,7 @@ public class Board extends Observable implements Observer {
         return connectedComponent.size() == pieceCount;
     }
 
+    /*Retunrs number of pieces a player with id has in state[][]*/
     private int getcount(int[][] state, int id) {
         int c =0;
         for(int i=0;i<rows;i++){
@@ -413,6 +404,7 @@ public class Board extends Observable implements Observer {
         return c;
     }
 
+    /* mthod to find all the contiguous pieces*/
     void findAllContiguous(int state[][],int r,int c,Set<int[]> found, int id){
 
         int start[] = {r,c};
@@ -582,6 +574,7 @@ public class Board extends Observable implements Observer {
     }
 
 
+    /*This method returns arrayList with [row,column] of all the valid actions from row,column*/
     public ArrayList<int[]> getValidAction(int state[][],int row,int column){
         ArrayList<int[]> action = new ArrayList<int[]>();
         int rowSum = rowSum(state,row,column);
@@ -680,7 +673,7 @@ public class Board extends Observable implements Observer {
         return action;
     }
 
-    // function to update action of piece after every move
+    /*function to update action of piece after every move*/
     public void updatePiecesActions(int state[][]){
         for(int i = 0; i< whitePiece.length; i++){
             if(whitePiece[i].getRow()<0){
@@ -698,10 +691,6 @@ public class Board extends Observable implements Observer {
     /**
      * Removes this piece from the board. Does nothing if the piece
      * is not, in fact, on the board.
-     * 
-     * @param piece
-     *        The piece to be removed.
-     * @return The removed Piece.
      */
     public boolean remove(Piece piece) {
         if (piece == null || piece.getBoard() != this) {
@@ -718,9 +707,6 @@ public class Board extends Observable implements Observer {
     /**
      * Ensures that the given piece will be drawn on top of any other pieces
      * in the same array location.
-     * 
-     * @param piece
-     *        The piece to promote to the top.
      */
     protected void moveToTop(Piece piece) {
         synchronized (allPieces) {
@@ -733,9 +719,6 @@ public class Board extends Observable implements Observer {
      * Sets the default speed of movement for pieces on this board, in squares
      * per second. This value is used only for pieces that do not specify their
      * own speed.
-     *
-     * @param speed
-     *        The default speed for pieces on this board.
      */
     public void setSpeed(int speed) {
         if (speed > 0)
@@ -802,9 +785,7 @@ public class Board extends Observable implements Observer {
     
     /**
      * Paints th1s board itself, not including the pieces.
-     * 
-     * @param g
-     *        The Graphics context on which this board is painted.
+     *  The Graphics context on which this board is painted.
      */
     public void paint(Graphics g) {
         int height = display.getHeight();

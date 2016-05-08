@@ -12,7 +12,7 @@ import java.util.*;
 
 
 /**
- * Created by sheshnath on 5/6/2016.
+ * Created by sheshnath on 4/27/2016.
  * Class that connects all the components.
  * Run this class to run the game.
  */
@@ -57,7 +57,7 @@ public class Controller {
         analysisText = new JLabel("Analysis here");
         analysis.add(analysisText);
         analysis.setSize(700,150);
-        playAIButton = new JButton("Click for AI to Play");
+        playAIButton = new JButton("Click here for AI to Play");
         analysis.add(playAIButton);
         optionPanel.addPlayBtnActionListener(new ActionListener() {
             @Override
@@ -81,13 +81,23 @@ public class Controller {
                 playAI();
             }
         });
+
+    }
+
+    static private void startNewGame() {
+        Controller controller = new Controller();
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                controller.createAndShowUI(controller);
+            }
+        });
     }
 
     private JComponent getMainComponent() {
         return mainPanel;
     }
 
-    // creates UI
+    /*creates UI*/
     private void createAndShowUI(Controller controller) {
         JFrame frame = new JFrame("Lines of Actions");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -101,12 +111,7 @@ public class Controller {
     }
 
     public static void main(String[] args) {
-        Controller controller = new Controller();
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                controller.createAndShowUI(controller);
-            }
-        });
+        startNewGame();
     }
 
     public void startGame(){

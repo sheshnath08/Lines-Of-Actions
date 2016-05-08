@@ -1,6 +1,7 @@
 package AI;
 
 import View.Board;
+import View.Constants;
 import View.Player;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class AIFunctions {
     Board newboard;
     int nodesCount = 0;
     int maxt = 0;
-    int depthLimit = 9;
+    int depthLimit;
     int depthCount;
 
     public AIFunctions(int state[][],Player ai, Player human){
@@ -32,6 +33,7 @@ public class AIFunctions {
         newboard = new Board(5,5);
         this.nodesCount = 0;
         this.depthCount = 0;
+        this.depthLimit = Constants.depthLevel;
     }
 
     /*

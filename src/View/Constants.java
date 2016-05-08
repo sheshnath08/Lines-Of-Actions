@@ -5,4 +5,5 @@ package View;
  */
 public class Constants {
     public static boolean COLOR = false;
+    public static int depthLevel = 5;
 }
