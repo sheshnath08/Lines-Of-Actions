@@ -11,7 +11,6 @@ Lines of Actions is a two player board game and developed as a part of course pr
 
 <br>
 <h3>How to Run:</h3>
-I have created a JAR file as LinesofActions.jar, which is executable java file, to run this file, your system should have JRE installed, and just double click on it.<br>
 You can compile classes in package View and AI under LinesofAction/src/ dir through terminal/command prompt using following command:<br>
     o javac View/*.java<br>
     o javac AI/*.java<br>
